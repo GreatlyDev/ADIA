@@ -1045,8 +1045,8 @@ values
     'main',
     'demo-run-1',
     null,
-    now() - interval '3 hours',
-    now() - interval '2 hours 52 minutes',
+    '2026-01-15 14:00:00+00'::timestamptz,
+    '2026-01-15 14:08:00+00'::timestamptz,
     480,
     '{"trigger":"fixture","stage":"phase_1"}'::jsonb
   ),
@@ -1062,8 +1062,8 @@ values
     'main',
     'demo-run-2',
     null,
-    now() - interval '90 minutes',
-    now() - interval '78 minutes',
+    '2026-01-15 15:30:00+00'::timestamptz,
+    '2026-01-15 15:42:00+00'::timestamptz,
     720,
     '{"trigger":"fixture","stage":"phase_1"}'::jsonb
   ),
@@ -1079,7 +1079,7 @@ values
     'feature/demo-risk-panel',
     'demo-run-3',
     null,
-    now() - interval '15 minutes',
+    '2026-01-15 16:15:00+00'::timestamptz,
     null,
     null,
     '{"trigger":"fixture","stage":"phase_1"}'::jsonb
@@ -1120,7 +1120,35 @@ values (
   '44444444-4444-4444-4444-444444444444',
   '11111111-1111-1111-1111-111111111111',
   '33333333-3333-3333-3333-333333333332',
-  '{"format_version":"fixture","resource_changes":[]}'::jsonb,
+  '{
+    "format_version": "fixture",
+    "resource_changes": [
+      {
+        "address": "aws_security_group.web",
+        "type": "aws_security_group",
+        "name": "web",
+        "provider_name": "registry.terraform.io/hashicorp/aws",
+        "change": {
+          "actions": ["create"],
+          "after": {
+            "name": "web"
+          }
+        }
+      },
+      {
+        "address": "aws_iam_policy.deploy",
+        "type": "aws_iam_policy",
+        "name": "deploy",
+        "provider_name": "registry.terraform.io/hashicorp/aws",
+        "change": {
+          "actions": ["update"],
+          "after": {
+            "name": "deploy"
+          }
+        }
+      }
+    ]
+  }'::jsonb,
   '{"note":"Fixture summary for Phase 1 schema validation"}'::jsonb,
   2,
   1,
@@ -1282,7 +1310,7 @@ values (
   'public_exposure',
   'Public exposure risk detected in fixture plan',
   'The fixture Terraform plan includes a networking change and a Checkov finding tied to broad ingress.',
-  now()
+  '2026-01-15 15:43:00+00'::timestamptz
 )
 on conflict (id) do update
 set
