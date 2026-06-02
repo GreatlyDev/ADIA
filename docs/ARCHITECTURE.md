@@ -88,6 +88,12 @@ Supabase will provide:
 
 Phase 1 will define schema and RLS. Phase 0 only creates Supabase directories and a seed placeholder.
 
+## Phase 1 Schema Foundation
+
+Phase 1 adds the planned Supabase data foundation behind the architecture pipeline. Organizations define tenant boundaries, projects group deployment visibility, and deployment runs anchor Terraform plan evidence, IaC scan findings, anomalies, insights, recommendations, and evidence links.
+
+The schema is intentionally advisory and evidence-first. It does not execute deployments, run Terraform, call LLM providers, or connect the dashboard to live Supabase data. Those behaviors remain outside Phase 1.
+
 ## Planned Terraform Role
 
 Terraform is a source of evidence and optional demo infrastructure in this project. ADIA will parse Terraform plan output, but the MVP will not run `terraform apply` from the UI.
