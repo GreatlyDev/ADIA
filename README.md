@@ -6,7 +6,7 @@ ADIA is an AI-assisted DevOps visibility dashboard for understanding deployment 
 
 ## Current Status
 
-Phase 0 is complete as of June 2, 2026.
+Phase 0 is complete.
 
 This repository currently contains the project foundation only:
 

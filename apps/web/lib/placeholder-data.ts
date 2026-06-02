@@ -17,8 +17,8 @@ export const deploymentRuns: DeploymentRun[] = [
     environment: "staging",
     commitSha: "8f31a90",
     source: "github_actions",
-    startedAt: "2026-06-02T13:12:00.000Z",
-    completedAt: "2026-06-02T13:18:00.000Z",
+    startedAt: "phase-0-demo-start",
+    completedAt: "phase-0-demo-complete",
     durationSeconds: 360,
   },
   {
@@ -29,7 +29,7 @@ export const deploymentRuns: DeploymentRun[] = [
     environment: "production",
     commitSha: "19ac4db",
     source: "github_actions",
-    startedAt: "2026-06-02T13:40:00.000Z",
+    startedAt: "phase-0-demo-running-start",
     durationSeconds: 180,
   },
   {
@@ -40,7 +40,7 @@ export const deploymentRuns: DeploymentRun[] = [
     environment: "dev",
     commitSha: "df5b7aa",
     source: "fixture",
-    startedAt: "2026-06-02T14:00:00.000Z",
+    startedAt: "phase-0-demo-queued-start",
     durationSeconds: 0,
   },
 ];
@@ -67,7 +67,7 @@ export const anomalyPreview: Anomaly = {
   summary:
     "Future deterministic rules will compare run duration, status patterns, and Terraform blast radius before LLM analysis.",
   evidenceRefs: ["run_demo_002"],
-  detectedAt: "2026-06-02T13:45:00.000Z",
+  detectedAt: "phase-0-demo-detected",
 };
 
 export const insightPreview: Insight = {
@@ -78,7 +78,7 @@ export const insightPreview: Insight = {
   summary:
     "Future server-side LLM output will summarize deterministic findings and cite evidence instead of executing remediation.",
   evidenceRefs: ["tf_plan_demo_001", "anomaly_demo_001"],
-  createdAt: "2026-06-02T13:50:00.000Z",
+  createdAt: "phase-0-demo-created",
 };
 
 export const recommendations: Recommendation[] = [
@@ -91,7 +91,7 @@ export const recommendations: Recommendation[] = [
       "Recommendation records will point to Terraform resources, scan findings, logs, or commits that support the guidance.",
     evidenceRefs: ["tf_plan_demo_001"],
     status: "open",
-    createdAt: "2026-06-02T13:55:00.000Z",
+    createdAt: "phase-0-demo-recommendation-created",
   },
   {
     id: "rec_demo_002",
@@ -102,7 +102,7 @@ export const recommendations: Recommendation[] = [
       "Anomaly recommendations will come from deterministic signals before any LLM summary is generated.",
     evidenceRefs: ["anomaly_demo_001"],
     status: "open",
-    createdAt: "2026-06-02T13:56:00.000Z",
+    createdAt: "phase-0-demo-recommendation-created",
   },
 ];
 

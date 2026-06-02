@@ -4,9 +4,9 @@ Use this file as a running notebook while building ADIA. Keep entries short, con
 
 ## Entry Template
 
-### Date
+### Entry Label
 
-YYYY-MM-DD
+Use a short topic name for the entry.
 
 ### What I Built
 
