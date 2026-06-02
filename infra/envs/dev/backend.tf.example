@@ -1,0 +1,12 @@
+# Example backend configuration only.
+# Copy to backend.tf in a real environment and configure intentionally.
+# Do not commit backend.tf files containing secrets, bucket names, or account data.
+
+# terraform {
+#   backend "s3" {
+#     bucket = "replace-me"
+#     key    = "adia/dev/terraform.tfstate"
+#     region = "us-east-1"
+#   }
+# }
+

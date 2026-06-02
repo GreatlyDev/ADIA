@@ -1,0 +1,20 @@
+{
+  "name": "adia",
+  "version": "0.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.24.0",
+  "scripts": {
+    "dev": "pnpm --filter @adia/web dev",
+    "build": "pnpm -r --if-present build",
+    "typecheck": "pnpm -r --if-present typecheck",
+    "test": "pnpm -r --if-present test",
+    "lint": "pnpm -r --if-present lint",
+    "format": "prettier --check \"**/*.{css,js,json,jsonc,md,mjs,ts,tsx,yaml,yml}\"",
+    "format:write": "prettier --write \"**/*.{css,js,json,jsonc,md,mjs,ts,tsx,yaml,yml}\""
+  },
+  "devDependencies": {
+    "prettier": "^3.6.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}
