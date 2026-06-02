@@ -1,3 +1,5 @@
+export type OrganizationRole = "owner" | "admin" | "member" | "viewer";
+
 export type DeploymentStatus =
   | "queued"
   | "running"
@@ -26,8 +28,46 @@ export type RecommendationStatus =
   | "dismissed"
   | "resolved";
 
+export type EvidenceTable =
+  | "deployment_runs"
+  | "terraform_plans"
+  | "terraform_resource_changes"
+  | "iac_scan_findings"
+  | "anomalies"
+  | "insights"
+  | "recommendations";
+
+export interface Organization {
+  id: string;
+  name: string;
+  slug: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface OrganizationMember {
+  id: string;
+  organizationId: string;
+  userId: string;
+  role: OrganizationRole;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Project {
+  id: string;
+  organizationId: string;
+  name: string;
+  slug: string;
+  defaultEnvironment: string;
+  createdAt: string;
+  updatedAt: string;
+  repositoryUrl?: string;
+}
+
 export interface DeploymentRun {
   id: string;
+  organizationId: string;
   projectId: string;
   name: string;
   status: DeploymentStatus;
@@ -35,6 +75,9 @@ export interface DeploymentRun {
   source: DeploymentSource;
   startedAt: string;
   commitSha?: string;
+  branch?: string;
+  externalRunId?: string;
+  externalRunUrl?: string;
   completedAt?: string;
   durationSeconds?: number;
   metadata?: Record<string, unknown>;
@@ -42,6 +85,8 @@ export interface DeploymentRun {
 
 export interface TerraformResourceChange {
   id: string;
+  organizationId: string;
+  terraformPlanId: string;
   deploymentRunId: string;
   address: string;
   type: string;
@@ -56,6 +101,7 @@ export interface TerraformResourceChange {
 
 export interface TerraformPlanSummary {
   id: string;
+  organizationId: string;
   deploymentRunId: string;
   creates: number;
   updates: number;
@@ -70,20 +116,22 @@ export interface TerraformPlanSummary {
 
 export interface IacScanFinding {
   id: string;
+  organizationId: string;
   deploymentRunId: string;
   scanner: IacScanner;
   status: IacFindingStatus;
   severity: Severity;
   checkId: string;
   title: string;
+  evidenceRefs: string[];
   resource?: string;
   filePath?: string;
   guideline?: string;
-  evidenceRefs: string[];
 }
 
 export interface Anomaly {
   id: string;
+  organizationId: string;
   deploymentRunId: string;
   severity: Severity;
   title: string;
@@ -95,6 +143,7 @@ export interface Anomaly {
 
 export interface Insight {
   id: string;
+  organizationId: string;
   deploymentRunId: string;
   severity: Severity;
   title: string;
@@ -102,10 +151,12 @@ export interface Insight {
   evidenceRefs: string[];
   createdAt: string;
   model?: string;
+  structuredOutput?: Record<string, unknown>;
 }
 
 export interface Recommendation {
   id: string;
+  organizationId: string;
   deploymentRunId: string;
   severity: Severity;
   title: string;
@@ -113,4 +164,17 @@ export interface Recommendation {
   evidenceRefs: string[];
   status: RecommendationStatus;
   createdAt: string;
+}
+
+export interface EvidenceLink {
+  id: string;
+  organizationId: string;
+  deploymentRunId?: string;
+  sourceTable: EvidenceTable;
+  sourceId: string;
+  targetTable: EvidenceTable;
+  targetId: string;
+  createdAt: string;
+  label?: string;
+  metadata?: Record<string, unknown>;
 }

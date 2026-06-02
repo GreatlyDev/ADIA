@@ -1,11 +1,13 @@
 import type { TerraformPlanSummary } from "@adia/core";
 
 export interface TerraformPlanParserInput {
+  organizationId: string;
   deploymentRunId: string;
   plan: unknown;
 }
 
 export function summarizeTerraformPlan({
+  organizationId,
   deploymentRunId,
   plan,
 }: TerraformPlanParserInput): TerraformPlanSummary {
@@ -15,6 +17,7 @@ export function summarizeTerraformPlan({
   // action counts, IAM/networking risk flags, and public exposure signals.
   return {
     id: `tf_plan_placeholder_${deploymentRunId}`,
+    organizationId,
     deploymentRunId,
     creates: 0,
     updates: 0,

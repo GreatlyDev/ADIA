@@ -8,9 +8,12 @@ import type {
 import type { PlannedModule } from "../components/module-card";
 import type { StatusCardProps } from "../components/status-card";
 
+const demoOrganizationId = "org_demo_adia";
+
 export const deploymentRuns: DeploymentRun[] = [
   {
     id: "run_demo_001",
+    organizationId: demoOrganizationId,
     projectId: "project_demo_platform",
     name: "Checkout API staging deploy",
     status: "succeeded",
@@ -23,6 +26,7 @@ export const deploymentRuns: DeploymentRun[] = [
   },
   {
     id: "run_demo_002",
+    organizationId: demoOrganizationId,
     projectId: "project_demo_platform",
     name: "Worker image rollout",
     status: "running",
@@ -34,6 +38,7 @@ export const deploymentRuns: DeploymentRun[] = [
   },
   {
     id: "run_demo_003",
+    organizationId: demoOrganizationId,
     projectId: "project_demo_platform",
     name: "Terraform network preview",
     status: "queued",
@@ -47,6 +52,7 @@ export const deploymentRuns: DeploymentRun[] = [
 
 export const terraformSummary: TerraformPlanSummary = {
   id: "tf_plan_demo_001",
+  organizationId: demoOrganizationId,
   deploymentRunId: "run_demo_003",
   creates: 3,
   updates: 2,
@@ -61,6 +67,7 @@ export const terraformSummary: TerraformPlanSummary = {
 
 export const anomalyPreview: Anomaly = {
   id: "anomaly_demo_001",
+  organizationId: demoOrganizationId,
   deploymentRunId: "run_demo_002",
   severity: "medium",
   title: "Duration drift placeholder",
@@ -72,6 +79,7 @@ export const anomalyPreview: Anomaly = {
 
 export const insightPreview: Insight = {
   id: "insight_demo_001",
+  organizationId: demoOrganizationId,
   deploymentRunId: "run_demo_003",
   severity: "info",
   title: "Structured AI insight placeholder",
@@ -84,6 +92,7 @@ export const insightPreview: Insight = {
 export const recommendations: Recommendation[] = [
   {
     id: "rec_demo_001",
+    organizationId: demoOrganizationId,
     deploymentRunId: "run_demo_003",
     severity: "medium",
     title: "Review networking change evidence",
@@ -95,6 +104,7 @@ export const recommendations: Recommendation[] = [
   },
   {
     id: "rec_demo_002",
+    organizationId: demoOrganizationId,
     deploymentRunId: "run_demo_002",
     severity: "low",
     title: "Compare duration against baseline",
