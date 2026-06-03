@@ -178,3 +178,5 @@ export interface EvidenceLink {
   label?: string;
   metadata?: Record<string, unknown>;
 }
+
+export * from "./ingestion";
