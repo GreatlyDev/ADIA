@@ -121,7 +121,9 @@ export const isSafeFixturePath = (fixturePath: string): boolean => {
 
   const parts = fixturePath.split("/");
 
-  return parts.every((part) => part.length > 0 && part !== "." && part !== "..");
+  return parts.every(
+    (part) => part.length > 0 && part !== "." && part !== "..",
+  );
 };
 
 export const validateIngestionEnvelope = (
@@ -274,7 +276,8 @@ const validateEvidence = (
     if (!isOneOf(item.format, INGESTION_EVIDENCE_FORMATS)) {
       issues.push({
         path: `${pathPrefix}.format`,
-        message: "Expected one of terraform_show_json, checkov_json, plain_text.",
+        message:
+          "Expected one of terraform_show_json, checkov_json, plain_text.",
       });
     }
 

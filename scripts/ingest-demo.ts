@@ -22,7 +22,9 @@ const main = (): void => {
   const missingEvidence = validation.value.evidence.filter((evidence) => {
     const evidencePath = resolve(fixtureRoot, evidence.path);
 
-    return !isPathInside(fixtureRoot, evidencePath) || !existsSync(evidencePath);
+    return (
+      !isPathInside(fixtureRoot, evidencePath) || !existsSync(evidencePath)
+    );
   });
 
   if (missingEvidence.length > 0) {
@@ -66,7 +68,9 @@ const resolveFixtureArgument = (fixtureArgument?: string): string => {
 
 const readJsonFixture = (fixturePath: string): unknown => {
   if (!existsSync(fixturePath)) {
-    throw new Error(`Fixture file does not exist: ${toWorkspacePath(fixturePath)}`);
+    throw new Error(
+      `Fixture file does not exist: ${toWorkspacePath(fixturePath)}`,
+    );
   }
 
   return JSON.parse(readFileSync(fixturePath, "utf8")) as unknown;
