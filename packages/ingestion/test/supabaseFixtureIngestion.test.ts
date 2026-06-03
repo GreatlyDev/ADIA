@@ -350,7 +350,10 @@ class FakeQueryBuilder {
     return this;
   }
 
-  single(): Promise<{ data: FakeRow | null; error: { message: string } | null }> {
+  single(): Promise<{
+    data: FakeRow | null;
+    error: { message: string } | null;
+  }> {
     this.recordCall();
 
     if (this.operation === "upsert") {
@@ -385,7 +388,10 @@ class FakeQueryBuilder {
 
   then<TResult1 = { data: FakeRow[]; error: null }, TResult2 = never>(
     onfulfilled?:
-      | ((value: { data: FakeRow[]; error: null }) => TResult1 | PromiseLike<TResult1>)
+      | ((value: {
+          data: FakeRow[];
+          error: null;
+        }) => TResult1 | PromiseLike<TResult1>)
       | null,
     onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
   ): PromiseLike<TResult1 | TResult2> {
@@ -399,7 +405,9 @@ class FakeQueryBuilder {
     }
 
     return Promise.resolve({
-      data: this.upsertRows(this.payload).map((row) => this.projectRequiredRow(row)),
+      data: this.upsertRows(this.payload).map((row) =>
+        this.projectRequiredRow(row),
+      ),
       error: null,
     }).then(onfulfilled, onrejected);
   }

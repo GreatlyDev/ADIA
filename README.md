@@ -6,22 +6,23 @@ ADIA is an AI-assisted DevOps visibility dashboard for understanding deployment 
 
 ## Current Status
 
-Phase 0 and Phase 1 are complete. Phase 2 has started with a contract-and-fixture-only ingestion slice.
+Phase 0 and Phase 1 are complete. Phase 2 has started with fixture-based ingestion slices.
 
 This repository currently contains:
 
 - A pnpm workspace with a Next.js App Router web app.
 - A static Tailwind dashboard preview with planned MVP modules.
 - Shared TypeScript domain types and ingestion envelope contracts in `packages/core`.
+- Server-side Supabase fixture ingestion in `packages/ingestion`.
 - Analyzer package stubs in `packages/analyzers`.
 - Vitest tests for analyzer stubs and ingestion contract validation.
-- Supabase schema migration and seed data for the Phase 1 data model.
+- Supabase schema migrations and seed data for the Phase 1 data model plus Phase 2B raw evidence metadata.
 - Terraform directory placeholders that create no cloud resources.
-- Fixture directories and a local replay script for a demo GitHub Actions deployment run.
+- Fixture directories, a validation replay script, and a Supabase-backed fixture ingestion CLI for a demo GitHub Actions deployment run.
 - Documentation for product scope, architecture, decisions, and learning notes.
 - Safe starter GitHub Actions workflows for CI and Terraform validation.
 
-Current Phase 2 work intentionally does not include Supabase writes, webhook ingestion, Terraform parsing, Checkov parsing, LLM calls, or autonomous remediation.
+Current Phase 2 work intentionally does not include webhook ingestion, Terraform parsing, Checkov parsing, LLM calls, or autonomous remediation.
 
 ## How ADIA Is Different
 
@@ -60,8 +61,9 @@ Planned MVP capabilities:
 ```text
 apps/web                 Next.js App Router + Tailwind starter dashboard
 packages/core            Shared ADIA TypeScript types and ingestion contracts
+packages/ingestion       Server-only Supabase fixture ingestion
 packages/analyzers       Placeholder parser/anomaly/redaction modules
-supabase                 Phase 1 schema migration, placeholders, and seed data
+supabase                 Schema migrations, placeholders, and seed data
 infra                    Safe Terraform placeholders for future modules/envs
 scripts/fixtures         Sanitized demo ingestion and evidence fixtures
 docs                     PRD, architecture, decisions, and learning log
@@ -134,6 +136,20 @@ pnpm exec tsx scripts/ingest-demo.ts
 
 The demo validates one deployment-run fixture and checks that referenced evidence files exist. It does not write to Supabase. See `docs/INGESTION_FIXTURES.md` for details.
 
+Run the Phase 2B Supabase-backed fixture ingestion help command:
+
+```bash
+pnpm exec tsx scripts/ingest-fixture-to-supabase.ts --help
+```
+
+To write the demo fixture to Supabase, configure server-side Supabase environment variables and run:
+
+```bash
+pnpm exec tsx scripts/ingest-fixture-to-supabase.ts
+```
+
+This writes `deployment_runs` and `raw_evidence_files` metadata only. It does not parse Terraform, parse Checkov, call LLMs, or execute infrastructure commands.
+
 Optional Terraform validation when Terraform is installed:
 
 ```bash
@@ -152,6 +168,7 @@ The scaffold and current contract-fixture slice have been verified with:
 - `pnpm format`
 - `pnpm build`
 - `pnpm exec tsx scripts/ingest-demo.ts`
+- `pnpm exec tsx scripts/ingest-fixture-to-supabase.ts --help`
 
 Browser verification was also performed against the built Next.js app. The landing page and `/dashboard` route rendered with no browser console errors.
 

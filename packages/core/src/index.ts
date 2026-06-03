@@ -28,8 +28,16 @@ export type RecommendationStatus =
   | "dismissed"
   | "resolved";
 
+export type RawEvidenceKind = "terraform_plan" | "iac_scan" | "log";
+
+export type RawEvidenceFormat =
+  | "terraform_show_json"
+  | "checkov_json"
+  | "plain_text";
+
 export type EvidenceTable =
   | "deployment_runs"
+  | "raw_evidence_files"
   | "terraform_plans"
   | "terraform_resource_changes"
   | "iac_scan_findings"
@@ -112,6 +120,21 @@ export interface TerraformPlanSummary {
   networkingChangeCount: number;
   publicExposureCount: number;
   resourceChanges: TerraformResourceChange[];
+}
+
+export interface RawEvidenceFile {
+  id: string;
+  organizationId: string;
+  deploymentRunId: string;
+  kind: RawEvidenceKind;
+  format: RawEvidenceFormat;
+  path: string;
+  createdAt: string;
+  updatedAt: string;
+  label?: string;
+  sizeBytes?: number;
+  contentSha256?: string;
+  metadata?: Record<string, unknown>;
 }
 
 export interface IacScanFinding {

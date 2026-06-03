@@ -4,13 +4,13 @@ ADIA uses fixture-first development so ingestion contracts can be designed and t
 
 ## Current Scope
 
-Phase 2 currently supports a contract-only fixture demo:
+Phase 2 currently supports fixture-first ingestion:
 
 - One deployment run per fixture envelope.
 - Shallow evidence references for Terraform plan JSON, Checkov JSON, and logs.
 - Runtime validation through `packages/core`.
 - Local evidence-file existence checks.
-- No Supabase writes.
+- Optional Supabase writes for `deployment_runs` and `raw_evidence_files` metadata through `packages/ingestion`.
 - No webhook ingestion.
 - No Terraform or Checkov parsing.
 - No LLM calls.
@@ -55,6 +55,44 @@ pnpm exec tsx scripts/ingest-demo.ts github-actions/deploy-staging.json
 
 The script rejects absolute paths, path traversal, duplicate separators, and missing evidence files.
 
+## Write A Fixture To Supabase
+
+Phase 2B adds a server-only CLI that validates the same fixture envelope, computes raw evidence file size and SHA-256 metadata, and writes:
+
+- One `deployment_runs` row.
+- One `raw_evidence_files` row per evidence reference.
+
+View usage:
+
+```bash
+pnpm exec tsx scripts/ingest-fixture-to-supabase.ts --help
+```
+
+Run ingestion with the default fixture:
+
+```bash
+pnpm exec tsx scripts/ingest-fixture-to-supabase.ts
+```
+
+Required server-side environment:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+SUPABASE_SERVICE_ROLE_KEY=
+```
+
+Alternative RLS-authenticated environment:
+
+```bash
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+SUPABASE_INGESTION_ACCESS_TOKEN=
+```
+
+`SUPABASE_SERVICE_ROLE_KEY` is for trusted local/server jobs only. It must never be exposed to browser code.
+
+The Supabase-backed CLI still does not parse Terraform, parse Checkov, call LLMs, or execute infrastructure commands.
+
 ## Envelope Contract
 
 Fixture envelopes use `schemaVersion: "adia.ingestion.v1"` and include:
@@ -71,7 +109,6 @@ This envelope is intentionally broader than a single GitHub event shape so futur
 
 Later phases will add:
 
-- Supabase-backed deployment run ingestion.
 - GitHub webhook validation.
 - Terraform plan parsing.
 - Checkov finding parsing.

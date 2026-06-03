@@ -290,9 +290,7 @@ const calculateDurationSeconds = (
   );
 };
 
-const formatValidationIssues = (
-  issues: IngestionValidationIssue[],
-): string =>
+const formatValidationIssues = (issues: IngestionValidationIssue[]): string =>
   [
     "Ingestion envelope failed validation:",
     ...issues.map((issue) => `- ${issue.path}: ${issue.message}`),
@@ -323,9 +321,7 @@ interface QueryBuilderLike {
     onfulfilled?:
       | ((value: QueryResult<unknown[]>) => TResult1 | PromiseLike<TResult1>)
       | null,
-    onrejected?:
-      | ((reason: unknown) => TResult2 | PromiseLike<TResult2>)
-      | null,
+    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
   ): PromiseLike<TResult1 | TResult2>;
 }
 

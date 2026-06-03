@@ -82,7 +82,9 @@ const resolveFixtureArgument = (fixtureArgument?: string): string => {
 
 const readAndValidateEnvelope = (fixturePath: string): IngestionEnvelope => {
   if (!existsSync(fixturePath)) {
-    throw new Error(`Fixture file does not exist: ${toWorkspacePath(fixturePath)}`);
+    throw new Error(
+      `Fixture file does not exist: ${toWorkspacePath(fixturePath)}`,
+    );
   }
 
   const parsed = JSON.parse(readFileSync(fixturePath, "utf8")) as unknown;

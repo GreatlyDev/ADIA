@@ -43,3 +43,10 @@ This file records important technical and product decisions for ADIA. New decisi
 - Context: The related LangChain/Kubernetes project handles orchestration and execution. ADIA should show different product judgment.
 - Decision: ADIA focuses on visibility, risk detection, CI/CD observability, and evidence-grounded insight.
 - Consequences: Kubernetes control and autonomous remediation stay out of ADIA's core MVP.
+
+## ADR-007: Store Raw Evidence Metadata Before Parsing Evidence
+
+- Status: Accepted
+- Context: ADIA needs a trustworthy inventory of deployment evidence before Terraform, Checkov, log parsing, anomaly detection, or LLM insight generation is implemented.
+- Decision: Phase 2B stores fixture evidence metadata in `raw_evidence_files` before any semantic parsing is added.
+- Consequences: ADIA can track evidence paths, labels, sizes, hashes, and envelope metadata without claiming it has interpreted the evidence yet.
