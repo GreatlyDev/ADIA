@@ -15,7 +15,8 @@
     "baseUrl": ".",
     "paths": {
       "@adia/core": ["packages/core/src/index.ts"],
-      "@adia/analyzers": ["packages/analyzers/src/index.ts"]
+      "@adia/analyzers": ["packages/analyzers/src/index.ts"],
+      "@adia/ingestion": ["packages/ingestion/src/index.ts"]
     }
   }
 }
