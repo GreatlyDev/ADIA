@@ -19,6 +19,7 @@ coverage/
 
 # Logs
 *.log
+!scripts/fixtures/logs/*.log
 npm-debug.log*
 pnpm-debug.log*
 yarn-debug.log*

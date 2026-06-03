@@ -1,0 +1,48 @@
+{
+  "format_version": "1.2",
+  "terraform_version": "1.7.5",
+  "planned_values": {
+    "root_module": {
+      "resources": [
+        {
+          "address": "aws_s3_bucket.app_logs",
+          "mode": "managed",
+          "type": "aws_s3_bucket",
+          "name": "app_logs",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "values": {
+            "bucket": "adia-demo-staging-logs",
+            "tags": {
+              "Project": "ADIA",
+              "Environment": "staging"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "resource_changes": [
+    {
+      "address": "aws_s3_bucket.app_logs",
+      "mode": "managed",
+      "type": "aws_s3_bucket",
+      "name": "app_logs",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": ["create"],
+        "before": null,
+        "after": {
+          "bucket": "adia-demo-staging-logs",
+          "tags": {
+            "Project": "ADIA",
+            "Environment": "staging"
+          }
+        },
+        "after_unknown": {
+          "id": true,
+          "arn": true
+        }
+      }
+    }
+  ]
+}

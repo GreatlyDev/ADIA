@@ -1,0 +1,4 @@
+2026-01-15T12:00:00.000Z Starting ADIA demo staging deployment
+2026-01-15T12:01:12.000Z Terraform plan generated and uploaded as workflow artifact
+2026-01-15T12:02:05.000Z Checkov scan completed with 1 failed check and 1 passed check
+2026-01-15T12:07:30.000Z Deployment workflow completed successfully

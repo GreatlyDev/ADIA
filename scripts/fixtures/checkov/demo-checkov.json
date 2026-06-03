@@ -1,0 +1,29 @@
+{
+  "check_type": "terraform",
+  "results": {
+    "failed_checks": [
+      {
+        "check_id": "CKV_AWS_18",
+        "check_name": "Ensure the S3 bucket has access logging enabled",
+        "severity": "LOW",
+        "file_path": "infra/modules/demo_aws_stack/main.tf",
+        "resource": "aws_s3_bucket.app_logs",
+        "guideline": "https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-logging-13"
+      }
+    ],
+    "passed_checks": [
+      {
+        "check_id": "CKV_AWS_144",
+        "check_name": "Ensure that S3 bucket has cross-region replication enabled",
+        "file_path": "infra/modules/demo_aws_stack/main.tf",
+        "resource": "aws_s3_bucket.app_logs"
+      }
+    ],
+    "skipped_checks": []
+  },
+  "summary": {
+    "failed": 1,
+    "passed": 1,
+    "skipped": 0
+  }
+}
