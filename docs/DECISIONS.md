@@ -50,3 +50,10 @@ This file records important technical and product decisions for ADIA. New decisi
 - Context: ADIA needs a trustworthy inventory of deployment evidence before Terraform, Checkov, log parsing, anomaly detection, or LLM insight generation is implemented.
 - Decision: Phase 2B stores fixture evidence metadata in `raw_evidence_files` before any semantic parsing is added.
 - Consequences: ADIA can track evidence paths, labels, sizes, hashes, and envelope metadata without claiming it has interpreted the evidence yet.
+
+## ADR-008: Keep GitHub Actions Event Mapping Pure Before Webhooks
+
+- Status: Accepted
+- Context: GitHub Actions will become an ingestion source, but webhook verification, route handling, and persistence should be developed after the event-to-envelope contract is stable.
+- Decision: Phase 2C adds a pure workflow-run event adapter that maps sanitized GitHub data into ADIA ingestion envelopes.
+- Consequences: The adapter is easy to test and can later be reused by webhook routes, fixture replay, or GitHub Actions artifact ingestion without mixing transport concerns into mapping logic.

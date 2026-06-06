@@ -14,6 +14,7 @@ This repository currently contains:
 - A static Tailwind dashboard preview with planned MVP modules.
 - Shared TypeScript domain types and ingestion envelope contracts in `packages/core`.
 - Server-side Supabase fixture ingestion in `packages/ingestion`.
+- A pure GitHub Actions workflow-run event adapter for producing ADIA ingestion envelopes.
 - Analyzer package stubs in `packages/analyzers`.
 - Vitest tests for analyzer stubs and ingestion contract validation.
 - Supabase schema migrations and seed data for the Phase 1 data model plus Phase 2B raw evidence metadata.
@@ -69,6 +70,8 @@ scripts/fixtures         Sanitized demo ingestion and evidence fixtures
 docs                     PRD, architecture, decisions, and learning log
 .github/workflows        CI and Terraform starter workflows
 ```
+
+The GitHub Actions adapter is a pure mapper. It does not verify webhook signatures, write to Supabase by itself, parse Terraform or Checkov evidence, or execute infrastructure commands.
 
 ## Architecture Summary
 

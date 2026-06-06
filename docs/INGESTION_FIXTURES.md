@@ -19,7 +19,7 @@ Phase 2 currently supports fixture-first ingestion:
 
 ```text
 scripts/fixtures/
-  github-actions/      Deployment run envelopes from GitHub Actions-style events
+  github-actions/      ADIA envelopes and sanitized GitHub workflow-run event samples
   terraform-plans/     terraform show -json output samples
   checkov/             Checkov JSON output samples
   logs/                Plain-text CI/CD or deployment log samples
@@ -92,6 +92,24 @@ SUPABASE_INGESTION_ACCESS_TOKEN=
 `SUPABASE_SERVICE_ROLE_KEY` is for trusted local/server jobs only. It must never be exposed to browser code.
 
 The Supabase-backed CLI still does not parse Terraform, parse Checkov, call LLMs, or execute infrastructure commands.
+
+## GitHub Actions Adapter
+
+Phase 2C adds a pure GitHub Actions workflow-run event adapter in `packages/ingestion`. It maps sanitized GitHub event data into the broader ADIA ingestion envelope.
+
+The adapter requires explicit ADIA context:
+
+- `organizationSlug`
+- `projectSlug`
+- `environment`
+- Evidence references for Terraform, Checkov, and logs
+
+GitHub workflow-run events do not contain trusted Terraform, Checkov, or log fixture paths, so the adapter does not invent evidence paths.
+
+Current GitHub Actions fixtures:
+
+- `scripts/fixtures/github-actions/workflow-run-event.json`: upstream-style GitHub workflow-run event data.
+- `scripts/fixtures/github-actions/deploy-staging.json`: ADIA ingestion envelope data for replay.
 
 ## Envelope Contract
 
