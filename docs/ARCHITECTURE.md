@@ -50,7 +50,7 @@ Initial ingestion sources:
 - Log snippets from deployment jobs.
 - Manual/demo fixtures for local development.
 
-The ingestion API will validate payload shape before persistence. Phase 0 only creates fixture directories and a placeholder script.
+The ingestion API validates payload shape before persistence. Phase 2D adds a signature-verified GitHub `workflow_run` route that maps signed events into ADIA ingestion envelopes and can return dry-run output. It does not persist webhook results yet.
 
 ## Planned Analysis Pipeline
 

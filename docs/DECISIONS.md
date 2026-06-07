@@ -57,3 +57,10 @@ This file records important technical and product decisions for ADIA. New decisi
 - Context: GitHub Actions will become an ingestion source, but webhook verification, route handling, and persistence should be developed after the event-to-envelope contract is stable.
 - Decision: Phase 2C adds a pure workflow-run event adapter that maps sanitized GitHub data into ADIA ingestion envelopes.
 - Consequences: The adapter is easy to test and can later be reused by webhook routes, fixture replay, or GitHub Actions artifact ingestion without mixing transport concerns into mapping logic.
+
+## ADR-009: Verify GitHub Webhook Signatures Before Parsing Payloads
+
+- Status: Accepted
+- Context: GitHub webhook bodies are untrusted input. ADIA should not parse or map webhook payloads unless the raw body matches GitHub's HMAC signature.
+- Decision: Phase 2D verifies `X-Hub-Signature-256` with `GITHUB_WEBHOOK_SECRET` before JSON parsing and maps only signed `workflow_run` events.
+- Consequences: The route can safely support dry-run envelope mapping now, while Supabase persistence and artifact ingestion remain future work.

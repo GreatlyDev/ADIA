@@ -11,7 +11,8 @@ Phase 2 currently supports fixture-first ingestion:
 - Runtime validation through `packages/core`.
 - Local evidence-file existence checks.
 - Optional Supabase writes for `deployment_runs` and `raw_evidence_files` metadata through `packages/ingestion`.
-- No webhook ingestion.
+- Signature-verified GitHub `workflow_run` webhook mapping with dry-run responses.
+- No webhook persistence.
 - No Terraform or Checkov parsing.
 - No LLM calls.
 
@@ -111,6 +112,31 @@ Current GitHub Actions fixtures:
 - `scripts/fixtures/github-actions/workflow-run-event.json`: upstream-style GitHub workflow-run event data.
 - `scripts/fixtures/github-actions/deploy-staging.json`: ADIA ingestion envelope data for replay.
 
+## GitHub Workflow Run Webhook Route
+
+Phase 2D adds a server-side Next.js route:
+
+```text
+POST /api/ingest/github/workflow-run
+```
+
+The route verifies `X-Hub-Signature-256` with `GITHUB_WEBHOOK_SECRET` before parsing the JSON body. Signed events that are not `workflow_run` are acknowledged and ignored.
+
+Dry-run mode returns the generated ADIA ingestion envelope:
+
+```text
+POST /api/ingest/github/workflow-run?dryRun=true
+```
+
+The route loads ADIA context from server-side environment variables:
+
+- `ADIA_GITHUB_WEBHOOK_ORGANIZATION_SLUG`
+- `ADIA_GITHUB_WEBHOOK_PROJECT_SLUG`
+- `ADIA_GITHUB_WEBHOOK_ENVIRONMENT`
+- `ADIA_GITHUB_WEBHOOK_EVIDENCE_JSON`
+
+Phase 2D does not persist webhook results to Supabase. It only verifies, validates, maps, and returns a response.
+
 ## Envelope Contract
 
 Fixture envelopes use `schemaVersion: "adia.ingestion.v1"` and include:
@@ -127,7 +153,7 @@ This envelope is intentionally broader than a single GitHub event shape so futur
 
 Later phases will add:
 
-- GitHub webhook validation.
+- GitHub webhook persistence and artifact ingestion.
 - Terraform plan parsing.
 - Checkov finding parsing.
 - Deterministic anomaly detection.

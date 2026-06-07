@@ -15,7 +15,8 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "../../packages/core/src/**/*.ts"
+    "../../packages/core/src/**/*.ts",
+    "../../packages/ingestion/src/**/*.ts"
   ],
   "exclude": ["node_modules"]
 }
