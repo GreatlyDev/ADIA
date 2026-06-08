@@ -10,9 +10,8 @@ Phase 2 currently supports fixture-first ingestion:
 - Shallow evidence references for Terraform plan JSON, Checkov JSON, and logs.
 - Runtime validation through `packages/core`.
 - Local evidence-file existence checks.
-- Optional Supabase writes for `deployment_runs` and `raw_evidence_files` metadata through `packages/ingestion`.
-- Signature-verified GitHub `workflow_run` webhook mapping with dry-run responses.
-- No webhook persistence.
+- Optional Supabase writes for `deployment_runs` and `raw_evidence_files` metadata through fixture replay and verified GitHub webhook persistence.
+- Signature-verified GitHub `workflow_run` webhook mapping with dry-run responses and non-dry-run persistence.
 - No Terraform or Checkov parsing.
 - No LLM calls.
 
@@ -114,7 +113,7 @@ Current GitHub Actions fixtures:
 
 ## GitHub Workflow Run Webhook Route
 
-Phase 2D adds a server-side Next.js route:
+Phase 2D adds a server-side Next.js route, and Phase 2E adds Supabase persistence for non-dry-run requests:
 
 ```text
 POST /api/ingest/github/workflow-run
@@ -135,7 +134,9 @@ The route loads ADIA context from server-side environment variables:
 - `ADIA_GITHUB_WEBHOOK_ENVIRONMENT`
 - `ADIA_GITHUB_WEBHOOK_EVIDENCE_JSON`
 
-Phase 2D does not persist webhook results to Supabase. It only verifies, validates, maps, and returns a response.
+With `dryRun=true`, the route verifies, validates, maps, and returns the generated envelope without creating a Supabase client.
+
+Without `dryRun=true`, the route persists one `deployment_runs` row and one `raw_evidence_files` row per configured evidence reference. It does not fetch GitHub artifacts or read evidence files, so webhook-created raw evidence rows have empty file size and SHA-256 hash values until artifact ingestion is added.
 
 ## Envelope Contract
 
@@ -153,7 +154,7 @@ This envelope is intentionally broader than a single GitHub event shape so futur
 
 Later phases will add:
 
-- GitHub webhook persistence and artifact ingestion.
+- GitHub artifact ingestion.
 - Terraform plan parsing.
 - Checkov finding parsing.
 - Deterministic anomaly detection.

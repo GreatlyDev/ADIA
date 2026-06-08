@@ -58,12 +58,13 @@ Planned entities:
 - `recommendations` - evidence-linked follow-up actions.
 - `evidence_links` - references to logs, plan paths, scan findings, commits, or run IDs.
 
-The schema will be implemented in Phase 1. Phase 0 only defines shared TypeScript types and placeholders.
+The base schema was implemented in Phase 1. Current Phase 2 work writes deployment runs and raw evidence metadata only; Terraform, Checkov, anomaly, insight, and recommendation records remain planned for later phases.
 
 ## API Roadmap
 
 Planned API surface:
 
+- `POST /api/ingest/github/workflow-run` for signed GitHub workflow-run webhook ingestion.
 - `POST /api/ingest/deployment-run` for CI/CD run ingestion.
 - `POST /api/ingest/terraform-plan` for Terraform plan JSON.
 - `POST /api/ingest/checkov` for IaC scan findings.
@@ -72,7 +73,7 @@ Planned API surface:
 - `POST /api/insights/run/:id` for server-side LLM insight generation.
 - `GET /api/projects/:id/runs` for dashboard data.
 
-Phase 0 does not implement APIs.
+Current Phase 2 work implements the signed GitHub workflow-run webhook route only. The other API routes remain roadmap items.
 
 ## Dashboard Roadmap
 
@@ -88,7 +89,7 @@ Planned dashboard surfaces:
 - Project and environment filters.
 - Realtime run updates via Supabase Realtime.
 
-Phase 0 includes static placeholder UI only.
+The dashboard currently remains a static placeholder UI.
 
 ## AI Safety Principles
 
@@ -105,7 +106,7 @@ Phase 0 includes static placeholder UI only.
 
 - Phase 0: Repo foundation and static starter app.
 - Phase 1: Supabase schema, Auth, RLS, and seed data.
-- Phase 2: Fixture ingestion and GitHub Actions ingestion contract.
+- Phase 2: Fixture ingestion, GitHub Actions ingestion contract, signed workflow-run webhook mapping, and metadata persistence.
 - Phase 3: Terraform and Checkov parsers.
 - Phase 4: Deterministic anomaly engine.
 - Phase 5: LLM insight service.
@@ -114,7 +115,7 @@ Phase 0 includes static placeholder UI only.
 
 ## Definition of Done
 
-Phase 0 is complete when:
+Phase 0 was complete when:
 
 - The repository structure exists.
 - The starter Next.js app runs with static placeholder data.
@@ -125,4 +126,4 @@ Phase 0 is complete when:
 - Documentation explains product scope, architecture, decisions, and learning flow.
 - No secrets are committed.
 - No real cloud resources are created.
-- No Supabase business logic, webhook ingestion, Terraform parsing, or LLM integration is implemented.
+- No Supabase business logic, webhook ingestion, Terraform parsing, or LLM integration was implemented in that foundation phase.

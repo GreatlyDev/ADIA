@@ -13,6 +13,12 @@ import {
   type GitHubActionsAdapterOptions,
   type GitHubWorkflowRunEvent,
 } from "./githubActionsAdapter";
+import {
+  SupabaseFixtureIngestionError,
+  ingestFixtureEnvelope,
+  type SupabaseFixtureIngestionResult,
+  type SupabaseIngestionClient,
+} from "./supabaseFixtureIngestion";
 
 export interface GitHubWorkflowRunWebhookEnv {
   GITHUB_WEBHOOK_SECRET?: string;
@@ -42,6 +48,12 @@ export interface ProcessGitHubWorkflowRunWebhookInput {
   dryRun: boolean;
 }
 
+export interface PersistGitHubWorkflowRunWebhookEnvelopeInput {
+  client: SupabaseIngestionClient;
+  envelope: IngestionEnvelope;
+  deliveryId?: string | null;
+}
+
 export interface GitHubWebhookErrorBody {
   ok: false;
   deliveryId?: string;
@@ -60,7 +72,7 @@ export interface GitHubWebhookIgnoredBody {
   reason: string;
 }
 
-export interface GitHubWorkflowRunWebhookSuccessBody {
+export interface GitHubWorkflowRunWebhookMappedBody {
   ok: true;
   dryRun: boolean;
   persisted: false;
@@ -71,10 +83,40 @@ export interface GitHubWorkflowRunWebhookSuccessBody {
   message: string;
 }
 
+export interface GitHubWorkflowRunWebhookPersistedBody {
+  ok: true;
+  dryRun: false;
+  persisted: true;
+  event: "workflow_run";
+  deliveryId?: string;
+  summary: IngestionEnvelopeSummary;
+  deploymentRun: {
+    id: string;
+    organizationId: string;
+    projectId: string;
+    name: string;
+  };
+  rawEvidenceFiles: SupabaseFixtureIngestionResult["rawEvidenceFiles"];
+  message: string;
+}
+
+export type GitHubWorkflowRunWebhookSuccessBody =
+  | GitHubWorkflowRunWebhookMappedBody
+  | GitHubWorkflowRunWebhookPersistedBody;
+
 export type GitHubWorkflowRunWebhookResult =
   | {
       status: 200 | 202;
-      body: GitHubWorkflowRunWebhookSuccessBody | GitHubWebhookIgnoredBody;
+      body: GitHubWorkflowRunWebhookMappedBody;
+      envelope: IngestionEnvelope;
+    }
+  | {
+      status: 202;
+      body: GitHubWebhookIgnoredBody;
+    }
+  | {
+      status: 200;
+      body: GitHubWorkflowRunWebhookPersistedBody;
     }
   | {
       status: 400 | 401 | 422 | 500;
@@ -224,6 +266,7 @@ export const processGitHubWorkflowRunWebhook = ({
 
     return {
       status: dryRun ? 200 : 202,
+      envelope,
       body: {
         ok: true,
         dryRun,
@@ -253,6 +296,34 @@ export const processGitHubWorkflowRunWebhook = ({
   }
 };
 
+export const persistGitHubWorkflowRunWebhookEnvelope = async ({
+  client,
+  envelope,
+  deliveryId,
+}: PersistGitHubWorkflowRunWebhookEnvelopeInput): Promise<GitHubWorkflowRunWebhookResult> => {
+  const result = await ingestFixtureEnvelope(client, envelope);
+
+  return {
+    status: 200,
+    body: {
+      ok: true,
+      dryRun: false,
+      persisted: true,
+      event: "workflow_run",
+      ...(deliveryId ? { deliveryId } : {}),
+      summary: summarizeIngestionEnvelope(envelope),
+      deploymentRun: {
+        id: result.deploymentRun.id,
+        organizationId: result.deploymentRun.organization_id,
+        projectId: result.deploymentRun.project_id,
+        name: result.deploymentRun.name,
+      },
+      rawEvidenceFiles: result.rawEvidenceFiles,
+      message: "Webhook verified, mapped, and persisted to Supabase.",
+    },
+  };
+};
+
 export const gitHubWebhookConfigErrorToResult = (
   error: unknown,
   deliveryId?: string | null,
@@ -267,6 +338,24 @@ export const gitHubWebhookConfigErrorToResult = (
   return errorResult(500, deliveryId, {
     code: "invalid_webhook_configuration",
     message: "GitHub webhook ingestion configuration is invalid.",
+  });
+};
+
+export const gitHubWebhookPersistenceErrorToResult = (
+  error: unknown,
+  deliveryId?: string | null,
+): GitHubWorkflowRunWebhookResult => {
+  if (error instanceof SupabaseFixtureIngestionError) {
+    return errorResult(500, deliveryId, {
+      code: error.code,
+      message: error.message,
+      details: error.details,
+    });
+  }
+
+  return errorResult(500, deliveryId, {
+    code: "webhook_persistence_failed",
+    message: "GitHub workflow_run webhook persistence failed.",
   });
 };
 

@@ -64,3 +64,10 @@ This file records important technical and product decisions for ADIA. New decisi
 - Context: GitHub webhook bodies are untrusted input. ADIA should not parse or map webhook payloads unless the raw body matches GitHub's HMAC signature.
 - Decision: Phase 2D verifies `X-Hub-Signature-256` with `GITHUB_WEBHOOK_SECRET` before JSON parsing and maps only signed `workflow_run` events.
 - Consequences: The route can safely support dry-run envelope mapping now, while Supabase persistence and artifact ingestion remain future work.
+
+## ADR-010: Reuse Validated Envelope Persistence For Webhooks
+
+- Status: Accepted
+- Context: The GitHub webhook route produces the same ADIA ingestion envelope shape as fixture replay, and the existing Supabase ingestion path already validates envelopes and writes deployment run plus raw evidence metadata rows.
+- Decision: Phase 2E persists verified non-dry-run webhook envelopes through the existing server-side Supabase ingestion path.
+- Consequences: Webhook persistence stays small and consistent with fixture replay. Artifact download, evidence hashing, Terraform parsing, Checkov parsing, and LLM insight generation remain separate future phases.

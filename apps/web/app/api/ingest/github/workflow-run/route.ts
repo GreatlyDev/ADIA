@@ -1,9 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 import {
+  createSupabaseServerClient,
   gitHubWebhookConfigErrorToResult,
+  gitHubWebhookPersistenceErrorToResult,
   loadGitHubWorkflowRunWebhookConfig,
   parseGitHubWebhookDryRun,
+  persistGitHubWorkflowRunWebhookEnvelope,
   processGitHubWorkflowRunWebhook,
 } from "@adia/ingestion";
 
@@ -33,16 +36,40 @@ export const POST = async (request: NextRequest): Promise<NextResponse> => {
     return NextResponse.json(result.body, { status: result.status });
   }
 
+  const dryRun = parseGitHubWebhookDryRun(
+    request.nextUrl.searchParams.get("dryRun"),
+  );
   const result = processGitHubWorkflowRunWebhook({
     payload,
     eventName: request.headers.get("x-github-event"),
     signature256: request.headers.get("x-hub-signature-256"),
     deliveryId,
     config,
-    dryRun: parseGitHubWebhookDryRun(
-      request.nextUrl.searchParams.get("dryRun"),
-    ),
+    dryRun,
   });
 
-  return NextResponse.json(result.body, { status: result.status });
+  if (!("envelope" in result) || result.body.dryRun) {
+    return NextResponse.json(result.body, { status: result.status });
+  }
+
+  try {
+    const persistedResult = await persistGitHubWorkflowRunWebhookEnvelope({
+      client: createSupabaseServerClient(),
+      deliveryId,
+      envelope: result.envelope,
+    });
+
+    return NextResponse.json(persistedResult.body, {
+      status: persistedResult.status,
+    });
+  } catch (error) {
+    const persistenceError = gitHubWebhookPersistenceErrorToResult(
+      error,
+      deliveryId,
+    );
+
+    return NextResponse.json(persistenceError.body, {
+      status: persistenceError.status,
+    });
+  }
 };

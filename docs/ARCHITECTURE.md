@@ -50,7 +50,7 @@ Initial ingestion sources:
 - Log snippets from deployment jobs.
 - Manual/demo fixtures for local development.
 
-The ingestion API validates payload shape before persistence. Phase 2D adds a signature-verified GitHub `workflow_run` route that maps signed events into ADIA ingestion envelopes and can return dry-run output. It does not persist webhook results yet.
+The ingestion API validates payload shape before persistence. Phase 2D adds a signature-verified GitHub `workflow_run` route that maps signed events into ADIA ingestion envelopes and can return dry-run output. Phase 2E persists non-dry-run webhook envelopes as deployment runs and raw evidence metadata without fetching artifacts or parsing evidence.
 
 ## Planned Analysis Pipeline
 

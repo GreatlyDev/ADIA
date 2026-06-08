@@ -15,16 +15,16 @@ This repository currently contains:
 - Shared TypeScript domain types and ingestion envelope contracts in `packages/core`.
 - Server-side Supabase fixture ingestion in `packages/ingestion`.
 - A pure GitHub Actions workflow-run event adapter for producing ADIA ingestion envelopes.
-- A server-side GitHub `workflow_run` webhook route that verifies signatures and supports dry-run envelope mapping.
+- A server-side GitHub `workflow_run` webhook route that verifies signatures, supports dry-run envelope mapping, and persists non-dry-run envelope metadata to Supabase.
 - Analyzer package stubs in `packages/analyzers`.
 - Vitest tests for analyzer stubs and ingestion contract validation.
-- Supabase schema migrations and seed data for the Phase 1 data model plus Phase 2B raw evidence metadata.
+- Supabase schema migrations and seed data for the Phase 1 data model plus Phase 2B/2E raw evidence metadata.
 - Terraform directory placeholders that create no cloud resources.
 - Fixture directories, a validation replay script, and a Supabase-backed fixture ingestion CLI for a demo GitHub Actions deployment run.
 - Documentation for product scope, architecture, decisions, and learning notes.
 - Safe starter GitHub Actions workflows for CI and Terraform validation.
 
-Current Phase 2 work intentionally does not include webhook persistence, Terraform parsing, Checkov parsing, LLM calls, or autonomous remediation.
+Current Phase 2 work intentionally does not include Terraform parsing, Checkov parsing, LLM calls, artifact download, or autonomous remediation.
 
 ## How ADIA Is Different
 
@@ -72,7 +72,7 @@ docs                     PRD, architecture, decisions, and learning log
 .github/workflows        CI and Terraform starter workflows
 ```
 
-The GitHub Actions adapter is a pure mapper. The Phase 2D webhook route verifies GitHub signatures before parsing payloads and can return a dry-run envelope. It does not write webhook results to Supabase yet, parse Terraform or Checkov evidence, or execute infrastructure commands.
+The GitHub Actions adapter is a pure mapper. The webhook route verifies GitHub signatures before parsing payloads, can return a dry-run envelope, and persists non-dry-run envelope metadata through server-side Supabase code. It does not parse Terraform or Checkov evidence, download GitHub artifacts, call LLMs, or execute infrastructure commands.
 
 ## Architecture Summary
 
@@ -154,7 +154,7 @@ pnpm exec tsx scripts/ingest-fixture-to-supabase.ts
 
 This writes `deployment_runs` and `raw_evidence_files` metadata only. It does not parse Terraform, parse Checkov, call LLMs, or execute infrastructure commands.
 
-Run the Phase 2D GitHub workflow-run webhook route in dry-run mode:
+Run the GitHub workflow-run webhook route in dry-run mode:
 
 ```text
 POST /api/ingest/github/workflow-run?dryRun=true
@@ -170,7 +170,9 @@ ADIA_GITHUB_WEBHOOK_ENVIRONMENT=
 ADIA_GITHUB_WEBHOOK_EVIDENCE_JSON=
 ```
 
-The route requires GitHub's `X-Hub-Signature-256` header. It verifies the raw body before JSON parsing, maps valid `workflow_run` events into ADIA envelopes, and returns dry-run output when requested. It does not persist webhook results in Phase 2D.
+The route requires GitHub's `X-Hub-Signature-256` header. It verifies the raw body before JSON parsing, maps valid `workflow_run` events into ADIA envelopes, and returns no-write dry-run output when requested.
+
+Without `dryRun=true`, the verified webhook envelope is persisted to Supabase as one `deployment_runs` row and one `raw_evidence_files` row per configured evidence reference. Webhook persistence does not fetch artifacts, so raw evidence file size and hash columns remain empty until a later artifact ingestion phase.
 
 Optional Terraform validation when Terraform is installed:
 

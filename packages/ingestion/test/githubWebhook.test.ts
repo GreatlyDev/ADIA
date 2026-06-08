@@ -3,12 +3,15 @@ import { createHmac } from "node:crypto";
 import { describe, expect, it } from "vitest";
 
 import {
+  gitHubWebhookPersistenceErrorToResult,
   loadGitHubWorkflowRunWebhookConfig,
   parseGitHubWebhookDryRun,
+  persistGitHubWorkflowRunWebhookEnvelope,
   processGitHubWorkflowRunWebhook,
   verifyGitHubWebhookSignature,
   type GitHubWorkflowRunWebhookEnv,
 } from "../src/githubWebhook";
+import { SupabaseFixtureIngestionError } from "../src/supabaseFixtureIngestion";
 
 const secret = "local-github-webhook-secret";
 
@@ -298,4 +301,343 @@ describe("processGitHubWorkflowRunWebhook", () => {
       },
     });
   });
+
+  it("exposes the mapped envelope for non-dry-run persistence without returning it in the response body", () => {
+    const payload = workflowRunPayload();
+    const result = processGitHubWorkflowRunWebhook({
+      payload,
+      eventName: "workflow_run",
+      signature256: signPayload(payload),
+      deliveryId: "delivery-123",
+      config: loadGitHubWorkflowRunWebhookConfig(webhookEnv()),
+      dryRun: false,
+    });
+
+    expect(result).toMatchObject({
+      status: 202,
+      envelope: {
+        schemaVersion: "adia.ingestion.v1",
+        source: "github_actions",
+        run: {
+          externalId: "123456789",
+          status: "succeeded",
+        },
+      },
+      body: {
+        ok: true,
+        dryRun: false,
+        persisted: false,
+        event: "workflow_run",
+        deliveryId: "delivery-123",
+      },
+    });
+    expect(result.body).not.toHaveProperty("envelope");
+  });
 });
+
+describe("persistGitHubWorkflowRunWebhookEnvelope", () => {
+  it("persists a mapped webhook envelope to deployment run and raw evidence metadata rows", async () => {
+    const payload = workflowRunPayload();
+    const mapping = processGitHubWorkflowRunWebhook({
+      payload,
+      eventName: "workflow_run",
+      signature256: signPayload(payload),
+      deliveryId: "delivery-123",
+      config: loadGitHubWorkflowRunWebhookConfig(webhookEnv()),
+      dryRun: false,
+    });
+
+    if (!("envelope" in mapping) || !mapping.envelope) {
+      throw new Error("Expected mapped webhook envelope.");
+    }
+
+    const client = createFakeSupabaseClient();
+    const result = await persistGitHubWorkflowRunWebhookEnvelope({
+      client,
+      deliveryId: "delivery-123",
+      envelope: mapping.envelope,
+    });
+
+    expect(result).toEqual({
+      status: 200,
+      body: {
+        ok: true,
+        dryRun: false,
+        persisted: true,
+        event: "workflow_run",
+        deliveryId: "delivery-123",
+        summary: {
+          organizationSlug: "adia-demo-org",
+          projectSlug: "adia-demo-service",
+          runName: "Deploy staging",
+          status: "succeeded",
+          evidence: [
+            "Terraform plan: terraform-plans/demo-plan.json",
+            "IaC scan: checkov/demo-checkov.json",
+            "Log: logs/deploy-staging.log",
+          ],
+        },
+        deploymentRun: {
+          id: "run-1",
+          organizationId: "org-1",
+          projectId: "project-1",
+          name: "Deploy staging",
+        },
+        rawEvidenceFiles: [
+          {
+            id: "evidence-1",
+            path: "terraform-plans/demo-plan.json",
+            kind: "terraform_plan",
+            format: "terraform_show_json",
+          },
+          {
+            id: "evidence-2",
+            path: "checkov/demo-checkov.json",
+            kind: "iac_scan",
+            format: "checkov_json",
+          },
+          {
+            id: "evidence-3",
+            path: "logs/deploy-staging.log",
+            kind: "log",
+            format: "plain_text",
+          },
+        ],
+        message: "Webhook verified, mapped, and persisted to Supabase.",
+      },
+    });
+
+    expect(client.tables.deployment_runs).toHaveLength(1);
+    expect(client.tables.raw_evidence_files).toHaveLength(3);
+    expect(client.tables.raw_evidence_files).toEqual([
+      expect.objectContaining({
+        path: "terraform-plans/demo-plan.json",
+        size_bytes: null,
+        content_sha256: null,
+      }),
+      expect.objectContaining({
+        path: "checkov/demo-checkov.json",
+        size_bytes: null,
+        content_sha256: null,
+      }),
+      expect.objectContaining({
+        path: "logs/deploy-staging.log",
+        size_bytes: null,
+        content_sha256: null,
+      }),
+    ]);
+  });
+});
+
+describe("gitHubWebhookPersistenceErrorToResult", () => {
+  it("converts Supabase ingestion failures to typed webhook error responses", () => {
+    const result = gitHubWebhookPersistenceErrorToResult(
+      new SupabaseFixtureIngestionError(
+        "organization_not_found",
+        "Organization slug not found: adia-demo-org",
+        {
+          message: "No rows found",
+        },
+      ),
+      "delivery-123",
+    );
+
+    expect(result).toEqual({
+      status: 500,
+      body: {
+        ok: false,
+        deliveryId: "delivery-123",
+        error: {
+          code: "organization_not_found",
+          message: "Organization slug not found: adia-demo-org",
+          details: {
+            message: "No rows found",
+          },
+        },
+      },
+    });
+  });
+});
+
+type FakeTableName =
+  | "organizations"
+  | "projects"
+  | "deployment_runs"
+  | "raw_evidence_files";
+
+interface FakeCall {
+  table: string;
+  operation: "select" | "upsert";
+  filters: Record<string, unknown>;
+}
+
+interface FakeRow {
+  id: string;
+  [key: string]: unknown;
+}
+
+const createFakeSupabaseClient = () => {
+  const client = {
+    calls: [] as FakeCall[],
+    nextRunId: 1,
+    nextEvidenceId: 1,
+    tables: {
+      organizations: [
+        {
+          id: "org-1",
+          slug: "adia-demo-org",
+        },
+      ] as FakeRow[],
+      projects: [
+        {
+          id: "project-1",
+          organization_id: "org-1",
+          slug: "adia-demo-service",
+        },
+      ] as FakeRow[],
+      deployment_runs: [] as FakeRow[],
+      raw_evidence_files: [] as FakeRow[],
+    },
+    from(table: FakeTableName) {
+      return new FakeQueryBuilder(client, table);
+    },
+  };
+
+  return client;
+};
+
+class FakeQueryBuilder {
+  private filters: Record<string, unknown> = {};
+  private operation: "select" | "upsert" = "select";
+  private payload: unknown;
+  private selectedColumns: string[] | null = null;
+
+  constructor(
+    private readonly client: ReturnType<typeof createFakeSupabaseClient>,
+    private readonly table: FakeTableName,
+  ) {}
+
+  select(columns?: string): this {
+    this.selectedColumns =
+      columns
+        ?.split(",")
+        .map((column) => column.trim())
+        .filter(Boolean) ?? null;
+    return this;
+  }
+
+  eq(column: string, value: unknown): this {
+    this.filters[column] = value;
+    return this;
+  }
+
+  upsert(payload: unknown): this {
+    this.operation = "upsert";
+    this.payload = payload;
+    return this;
+  }
+
+  single(): Promise<{
+    data: FakeRow | null;
+    error: { message: string } | null;
+  }> {
+    this.recordCall();
+
+    if (this.operation === "upsert") {
+      const rows = this.upsertRows(this.payload);
+      return Promise.resolve({
+        data: this.projectRow(rows[0] ?? null),
+        error: null,
+      });
+    }
+
+    const row =
+      this.client.tables[this.table].find((candidate) =>
+        Object.entries(this.filters).every(
+          ([key, value]) => candidate[key] === value,
+        ),
+      ) ?? null;
+
+    if (!row) {
+      return Promise.resolve({
+        data: null,
+        error: {
+          message: "No rows found",
+        },
+      });
+    }
+
+    return Promise.resolve({
+      data: this.projectRow(row),
+      error: null,
+    });
+  }
+
+  then<TResult1 = { data: FakeRow[]; error: null }, TResult2 = never>(
+    onfulfilled?:
+      | ((value: {
+          data: FakeRow[];
+          error: null;
+        }) => TResult1 | PromiseLike<TResult1>)
+      | null,
+    onrejected?: ((reason: unknown) => TResult2 | PromiseLike<TResult2>) | null,
+  ): PromiseLike<TResult1 | TResult2> {
+    this.recordCall();
+
+    if (this.operation !== "upsert") {
+      return Promise.resolve({ data: [], error: null }).then(
+        onfulfilled,
+        onrejected,
+      );
+    }
+
+    return Promise.resolve({
+      data: this.upsertRows(this.payload).map((row) =>
+        this.projectRequiredRow(row),
+      ),
+      error: null,
+    }).then(onfulfilled, onrejected);
+  }
+
+  private recordCall(): void {
+    this.client.calls.push({
+      table: this.table,
+      operation: this.operation,
+      filters: this.filters,
+    });
+  }
+
+  private upsertRows(payload: unknown): FakeRow[] {
+    const rows = Array.isArray(payload) ? payload : [payload];
+
+    return rows.map((row) => {
+      const writableRow = row as Record<string, unknown>;
+      const id =
+        this.table === "deployment_runs"
+          ? `run-${this.client.nextRunId++}`
+          : `evidence-${this.client.nextEvidenceId++}`;
+      const storedRow = {
+        id,
+        ...writableRow,
+      };
+
+      this.client.tables[this.table].push(storedRow);
+
+      return storedRow;
+    });
+  }
+
+  private projectRow(row: FakeRow | null): FakeRow | null {
+    if (!row || !this.selectedColumns) {
+      return row;
+    }
+
+    return Object.fromEntries(
+      this.selectedColumns.map((column) => [column, row[column]]),
+    ) as FakeRow;
+  }
+
+  private projectRequiredRow(row: FakeRow): FakeRow {
+    return this.projectRow(row) ?? row;
+  }
+}
