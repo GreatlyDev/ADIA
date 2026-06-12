@@ -52,7 +52,7 @@ Initial ingestion sources:
 
 The ingestion API validates payload shape before persistence. Phase 2D adds a signature-verified GitHub `workflow_run` route that maps signed events into ADIA ingestion envelopes and can return dry-run output. Phase 2E persists non-dry-run webhook envelopes as deployment runs and raw evidence metadata without fetching artifacts or parsing evidence.
 
-Phase 3A adds deterministic package-level parsing for already-loaded Terraform plan fixture JSON. That parser does not write to Supabase yet and is not exposed as an ingestion API route.
+Phase 3A adds deterministic package-level parsing for already-loaded Terraform plan fixture JSON. Phase 3B adds deterministic package-level parsing for already-loaded Checkov fixture JSON. These parsers do not write to Supabase yet and are not exposed as ingestion API routes.
 
 ## Planned Analysis Pipeline
 
@@ -64,7 +64,7 @@ The deterministic pipeline will run before any LLM step:
 4. Detect anomalies in status, duration, failure pattern, resource blast radius, and exposure changes.
 5. Produce structured evidence records for dashboard and LLM use.
 
-Phase 3A implements the first step for local fixture data only. The remaining analysis steps and database persistence are still planned.
+Phase 3A implements the Terraform parsing step for local fixture data only. Phase 3B implements the IaC scanner parsing step for local fixture data only. The remaining analysis steps and database persistence are still planned.
 
 ## Planned LLM Insight Pipeline
 

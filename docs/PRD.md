@@ -58,7 +58,7 @@ Planned entities:
 - `recommendations` - evidence-linked follow-up actions.
 - `evidence_links` - references to logs, plan paths, scan findings, commits, or run IDs.
 
-The base schema was implemented in Phase 1. Current ingestion work writes deployment runs and raw evidence metadata. Phase 3A can summarize Terraform plan fixture JSON in memory, but Terraform summary persistence, Checkov, anomaly, insight, and recommendation records remain planned for later phases.
+The base schema was implemented in Phase 1. Current ingestion work writes deployment runs and raw evidence metadata. Phase 3A can summarize Terraform plan fixture JSON in memory, and Phase 3B can normalize Checkov fixture JSON in memory, but parser persistence, anomaly, insight, and recommendation records remain planned for later phases.
 
 ## API Roadmap
 
@@ -73,7 +73,7 @@ Planned API surface:
 - `POST /api/insights/run/:id` for server-side LLM insight generation.
 - `GET /api/projects/:id/runs` for dashboard data.
 
-Current work implements the signed GitHub workflow-run webhook route and a package-level Terraform fixture parser. The Terraform parser is not exposed as an API route yet. The other API routes remain roadmap items.
+Current work implements the signed GitHub workflow-run webhook route plus package-level Terraform and Checkov fixture parsers. The parsers are not exposed as API routes yet. The other API routes remain roadmap items.
 
 ## Dashboard Roadmap
 
@@ -108,7 +108,8 @@ The dashboard currently remains a static placeholder UI.
 - Phase 1: Supabase schema, Auth, RLS, and seed data.
 - Phase 2: Fixture ingestion, GitHub Actions ingestion contract, signed workflow-run webhook mapping, and metadata persistence.
 - Phase 3A: Fixture-only Terraform plan parser.
-- Phase 3B: Checkov parser and parser persistence planning.
+- Phase 3B: Fixture-only Checkov parser.
+- Phase 3C: Parser persistence planning.
 - Phase 4: Deterministic anomaly engine.
 - Phase 5: LLM insight service.
 - Phase 6: Realtime dashboard integration.

@@ -9,6 +9,14 @@
         "file_path": "infra/modules/demo_aws_stack/main.tf",
         "resource": "aws_s3_bucket.app_logs",
         "guideline": "https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-logging-policies/bc-aws-logging-13"
+      },
+      {
+        "check_id": "CKV_AWS_260",
+        "check_name": "Ensure no security groups allow ingress from 0.0.0.0/0 to port 80",
+        "severity": "HIGH",
+        "file_path": "infra/modules/demo_aws_stack/network.tf",
+        "resource": "aws_security_group.web",
+        "guideline": "https://docs.prismacloud.io/en/enterprise-edition/policy-reference/aws-policies/aws-networking-policies"
       }
     ],
     "passed_checks": [
@@ -19,11 +27,28 @@
         "resource": "aws_s3_bucket.app_logs"
       }
     ],
-    "skipped_checks": []
+    "skipped_checks": [
+      {
+        "check_id": "CKV_AWS_20",
+        "check_name": "Ensure the S3 bucket has MFA delete enabled",
+        "file_path": "infra/modules/demo_aws_stack/main.tf",
+        "resource": "aws_s3_bucket.app_logs"
+      }
+    ],
+    "unknown_checks": [
+      {
+        "check_id": "CKV_CUSTOM_1",
+        "check_name": "Custom policy did not return a classified result",
+        "severity": "MEDIUM",
+        "file_path": "infra/modules/demo_aws_stack/custom.tf",
+        "resource": "custom_resource.demo"
+      }
+    ]
   },
   "summary": {
-    "failed": 1,
+    "failed": 2,
     "passed": 1,
-    "skipped": 0
+    "skipped": 1,
+    "unknown": 1
   }
 }

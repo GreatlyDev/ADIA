@@ -4,7 +4,7 @@ ADIA uses fixture-first development so ingestion contracts can be designed and t
 
 ## Current Scope
 
-Phase 2 supports fixture-first ingestion, and Phase 3A adds fixture-first Terraform plan analysis:
+Phase 2 supports fixture-first ingestion. Phase 3A adds fixture-first Terraform plan analysis, and Phase 3B adds fixture-first Checkov parsing:
 
 - One deployment run per fixture envelope.
 - Shallow evidence references for Terraform plan JSON, Checkov JSON, and logs.
@@ -13,8 +13,8 @@ Phase 2 supports fixture-first ingestion, and Phase 3A adds fixture-first Terraf
 - Optional Supabase writes for `deployment_runs` and `raw_evidence_files` metadata through fixture replay and verified GitHub webhook persistence.
 - Signature-verified GitHub `workflow_run` webhook mapping with dry-run responses and non-dry-run persistence.
 - Deterministic Terraform plan summary parsing for already-loaded fixture JSON in `packages/analyzers`.
-- No persistence of Terraform parser output yet.
-- No Checkov parsing.
+- Deterministic Checkov finding parsing for already-loaded fixture JSON in `packages/analyzers`.
+- No persistence of Terraform or Checkov parser output yet.
 - No LLM calls.
 
 ## Fixture Layout
@@ -113,6 +113,23 @@ The parser summarizes:
 
 Parser output currently stays in memory. It is not written to Supabase, exposed through an API route, or used for LLM insight generation yet.
 
+## Checkov Parser
+
+Phase 3B adds a package-level Checkov JSON parser for sanitized fixture data:
+
+```bash
+pnpm --filter @adia/analyzers test
+```
+
+The parser normalizes:
+
+- Failed, passed, skipped, and unknown findings.
+- Check IDs and check names.
+- Severity values into ADIA `info`, `low`, `medium`, `high`, and `critical`.
+- Resource addresses, file paths, guidelines, and JSON-location evidence references.
+
+Parser output currently stays in memory. It is not written to Supabase, exposed through an API route, used for LLM insight generation, or produced by executing Checkov.
+
 ## GitHub Actions Adapter
 
 Phase 2C adds a pure GitHub Actions workflow-run event adapter in `packages/ingestion`. It maps sanitized GitHub event data into the broader ADIA ingestion envelope.
@@ -176,7 +193,7 @@ Later phases will add:
 
 - GitHub artifact ingestion.
 - Terraform parser persistence and API wiring.
-- Checkov finding parsing.
+- Checkov parser persistence and API wiring.
 - Deterministic anomaly detection.
 - Evidence-linked LLM insight generation.
 
