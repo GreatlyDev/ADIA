@@ -14,6 +14,7 @@ Phase 2 supports fixture-first ingestion. Phase 3A adds fixture-first Terraform 
 - Signature-verified GitHub `workflow_run` webhook mapping with dry-run responses and non-dry-run persistence.
 - Deterministic Terraform plan summary parsing for already-loaded fixture JSON in `packages/analyzers`.
 - Deterministic Checkov finding parsing for already-loaded fixture JSON in `packages/analyzers`.
+- Parser persistence planning in `docs/PARSER_PERSISTENCE.md`.
 - No persistence of Terraform or Checkov parser output yet.
 - No LLM calls.
 

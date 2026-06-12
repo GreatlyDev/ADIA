@@ -85,3 +85,10 @@ This file records important technical and product decisions for ADIA. New decisi
 - Context: IaC scan findings are a core ADIA signal, but Checkov parsing needs deterministic status, severity, and evidence-reference behavior before persistence, anomaly detection, or LLM summarization depend on it.
 - Decision: Phase 3B implements a pure TypeScript parser over already-loaded sanitized Checkov JSON fixture values.
 - Consequences: ADIA can validate failed, passed, skipped, and unknown findings without executing Checkov, reading credentials, writing Supabase records, or calling LLM providers. Persistence and API wiring remain separate future phases.
+
+## ADR-013: Plan Parser Persistence Before Writing Parser Output
+
+- Status: Accepted
+- Context: ADIA now has deterministic Terraform and Checkov parsers plus existing Supabase evidence tables, but replay safety, tenant boundaries, and evidence links need a clear design before database writes are added.
+- Decision: Phase 3C documents parser persistence before implementation. Future writes should run server-side, re-check run and raw evidence ownership, use idempotent upserts backed by unique indexes, and link every persisted parser output to source evidence.
+- Consequences: Parser output remains in memory for now. A later implementation phase can add migrations and server-only persistence with fewer surprises around RLS, duplicate rows, and evidence traceability.

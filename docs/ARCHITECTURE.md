@@ -52,7 +52,7 @@ Initial ingestion sources:
 
 The ingestion API validates payload shape before persistence. Phase 2D adds a signature-verified GitHub `workflow_run` route that maps signed events into ADIA ingestion envelopes and can return dry-run output. Phase 2E persists non-dry-run webhook envelopes as deployment runs and raw evidence metadata without fetching artifacts or parsing evidence.
 
-Phase 3A adds deterministic package-level parsing for already-loaded Terraform plan fixture JSON. Phase 3B adds deterministic package-level parsing for already-loaded Checkov fixture JSON. These parsers do not write to Supabase yet and are not exposed as ingestion API routes.
+Phase 3A adds deterministic package-level parsing for already-loaded Terraform plan fixture JSON. Phase 3B adds deterministic package-level parsing for already-loaded Checkov fixture JSON. Phase 3C documents how those parser outputs will be written to Supabase in a later phase. These parsers do not write to Supabase yet and are not exposed as ingestion API routes.
 
 ## Planned Analysis Pipeline
 
@@ -64,7 +64,29 @@ The deterministic pipeline will run before any LLM step:
 4. Detect anomalies in status, duration, failure pattern, resource blast radius, and exposure changes.
 5. Produce structured evidence records for dashboard and LLM use.
 
-Phase 3A implements the Terraform parsing step for local fixture data only. Phase 3B implements the IaC scanner parsing step for local fixture data only. The remaining analysis steps and database persistence are still planned.
+Phase 3A implements the Terraform parsing step for local fixture data only. Phase 3B implements the IaC scanner parsing step for local fixture data only. Phase 3C defines the future persistence boundary for parser output. The remaining analysis steps and database persistence implementation are still planned.
+
+## Parser Persistence Plan
+
+Future parser persistence will be a server-only step after validated run ingestion and raw evidence metadata writes:
+
+```text
+deployment_runs + raw_evidence_files
+        |
+        v
+pure parser output
+        |
+        v
+server-only persistence boundary
+        |
+        v
+terraform_plans + terraform_resource_changes + iac_scan_findings
+        |
+        v
+evidence_links
+```
+
+The future persistence module should live outside browser code, re-check deployment run and raw evidence ownership before writing, and use idempotent upserts backed by unique database indexes. `docs/PARSER_PERSISTENCE.md` captures the detailed plan, including schema gaps, evidence-link labels, RLS-safe caller modes, and tests.
 
 ## Planned LLM Insight Pipeline
 
@@ -90,7 +112,7 @@ Supabase will provide:
 - Realtime subscriptions.
 - Edge functions only if they fit future ingestion or processing needs.
 
-Phase 1 will define schema and RLS. Phase 0 only creates Supabase directories and a seed placeholder.
+Phase 1 defines schema and RLS. Phase 2B/2E write deployment runs and raw evidence metadata. Phase 3C plans future parser persistence into the existing evidence tables, but does not implement those writes yet.
 
 ## Phase 1 Schema Foundation
 
