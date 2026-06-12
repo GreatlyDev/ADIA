@@ -17,6 +17,37 @@
               "Environment": "staging"
             }
           }
+        },
+        {
+          "address": "aws_iam_policy.deploy_permissions",
+          "mode": "managed",
+          "type": "aws_iam_policy",
+          "name": "deploy_permissions",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "values": {
+            "name": "adia-demo-deploy-permissions",
+            "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"s3:GetObject\",\"s3:PutObject\"],\"Resource\":\"*\"}]}"
+          }
+        },
+        {
+          "address": "module.network.aws_security_group.web",
+          "mode": "managed",
+          "module_address": "module.network",
+          "type": "aws_security_group",
+          "name": "web",
+          "provider_name": "registry.terraform.io/hashicorp/aws",
+          "values": {
+            "name": "adia-demo-web",
+            "ingress": [
+              {
+                "from_port": 443,
+                "to_port": 443,
+                "protocol": "tcp",
+                "cidr_blocks": ["0.0.0.0/0"],
+                "ipv6_cidr_blocks": []
+              }
+            ]
+          }
         }
       ]
     }
@@ -42,6 +73,87 @@
           "id": true,
           "arn": true
         }
+      }
+    },
+    {
+      "address": "aws_iam_policy.deploy_permissions",
+      "mode": "managed",
+      "type": "aws_iam_policy",
+      "name": "deploy_permissions",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": ["update"],
+        "before": {
+          "name": "adia-demo-deploy-permissions",
+          "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":\"s3:GetObject\",\"Resource\":\"arn:aws:s3:::adia-demo-staging-logs/*\"}]}"
+        },
+        "after": {
+          "name": "adia-demo-deploy-permissions",
+          "policy": "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Effect\":\"Allow\",\"Action\":[\"s3:GetObject\",\"s3:PutObject\"],\"Resource\":\"*\"}]}"
+        },
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "module.network.aws_security_group.web",
+      "mode": "managed",
+      "module_address": "module.network",
+      "type": "aws_security_group",
+      "name": "web",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": ["delete", "create"],
+        "before": {
+          "name": "adia-demo-web",
+          "ingress": []
+        },
+        "after": {
+          "name": "adia-demo-web",
+          "ingress": [
+            {
+              "from_port": 443,
+              "to_port": 443,
+              "protocol": "tcp",
+              "cidr_blocks": ["0.0.0.0/0"],
+              "ipv6_cidr_blocks": []
+            }
+          ]
+        },
+        "after_unknown": {
+          "id": true
+        }
+      }
+    },
+    {
+      "address": "aws_db_instance.legacy",
+      "mode": "managed",
+      "type": "aws_db_instance",
+      "name": "legacy",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": ["delete"],
+        "before": {
+          "identifier": "adia-demo-legacy"
+        },
+        "after": null,
+        "after_unknown": {}
+      }
+    },
+    {
+      "address": "aws_s3_bucket.noop",
+      "mode": "managed",
+      "type": "aws_s3_bucket",
+      "name": "noop",
+      "provider_name": "registry.terraform.io/hashicorp/aws",
+      "change": {
+        "actions": ["no-op"],
+        "before": {
+          "bucket": "adia-demo-noop"
+        },
+        "after": {
+          "bucket": "adia-demo-noop"
+        },
+        "after_unknown": {}
       }
     }
   ]

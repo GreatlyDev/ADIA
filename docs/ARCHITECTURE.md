@@ -52,6 +52,8 @@ Initial ingestion sources:
 
 The ingestion API validates payload shape before persistence. Phase 2D adds a signature-verified GitHub `workflow_run` route that maps signed events into ADIA ingestion envelopes and can return dry-run output. Phase 2E persists non-dry-run webhook envelopes as deployment runs and raw evidence metadata without fetching artifacts or parsing evidence.
 
+Phase 3A adds deterministic package-level parsing for already-loaded Terraform plan fixture JSON. That parser does not write to Supabase yet and is not exposed as an ingestion API route.
+
 ## Planned Analysis Pipeline
 
 The deterministic pipeline will run before any LLM step:
@@ -61,6 +63,8 @@ The deterministic pipeline will run before any LLM step:
 3. Detect high-risk infrastructure changes.
 4. Detect anomalies in status, duration, failure pattern, resource blast radius, and exposure changes.
 5. Produce structured evidence records for dashboard and LLM use.
+
+Phase 3A implements the first step for local fixture data only. The remaining analysis steps and database persistence are still planned.
 
 ## Planned LLM Insight Pipeline
 
@@ -96,7 +100,7 @@ The schema is intentionally advisory and evidence-first. It does not execute dep
 
 ## Planned Terraform Role
 
-Terraform is a source of evidence and optional demo infrastructure in this project. ADIA will parse Terraform plan output, but the MVP will not run `terraform apply` from the UI.
+Terraform is a source of evidence and optional demo infrastructure in this project. ADIA parses Terraform plan output as JSON evidence, but the MVP will not run `terraform apply` from the UI.
 
 The `infra/` directory contains safe placeholders only in Phase 0. Providers and real resources will be added intentionally in later phases.
 

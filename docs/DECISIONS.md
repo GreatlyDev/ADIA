@@ -70,4 +70,11 @@ This file records important technical and product decisions for ADIA. New decisi
 - Status: Accepted
 - Context: The GitHub webhook route produces the same ADIA ingestion envelope shape as fixture replay, and the existing Supabase ingestion path already validates envelopes and writes deployment run plus raw evidence metadata rows.
 - Decision: Phase 2E persists verified non-dry-run webhook envelopes through the existing server-side Supabase ingestion path.
-- Consequences: Webhook persistence stays small and consistent with fixture replay. Artifact download, evidence hashing, Terraform parsing, Checkov parsing, and LLM insight generation remain separate future phases.
+- Consequences: Webhook persistence stays small and consistent with fixture replay. Artifact download, evidence hashing, Terraform parser persistence, Checkov parsing, and LLM insight generation remain separate future phases.
+
+## ADR-011: Parse Terraform Fixture JSON Before Persistence Or LLM Use
+
+- Status: Accepted
+- Context: Terraform plan analysis is central to ADIA, but parser behavior needs to be deterministic and testable before database writes, anomaly detection, or LLM summarization depend on it.
+- Decision: Phase 3A implements a pure TypeScript parser over already-loaded sanitized Terraform `show -json` fixture values.
+- Consequences: ADIA can validate action counts and risk flags without executing Terraform, reading credentials, writing Supabase records, or calling LLM providers. Persistence and API wiring remain separate future phases.

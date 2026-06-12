@@ -1,6 +1,6 @@
 # Terraform Plan Fixtures
 
-Future phases will store sanitized `terraform show -json` output here.
+This directory stores sanitized `terraform show -json` output for fixture-first parser development.
 
 Expected fixture examples:
 
@@ -12,3 +12,5 @@ Expected fixture examples:
 - Public exposure risk example.
 
 Fixtures should be small enough for tests and demos. Do not include real account IDs, secrets, private IPs, or sensitive resource names.
+
+Phase 3A uses `demo-plan.json` to exercise deterministic Terraform summary parsing. Parser output is not persisted to Supabase yet.

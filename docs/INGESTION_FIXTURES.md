@@ -4,7 +4,7 @@ ADIA uses fixture-first development so ingestion contracts can be designed and t
 
 ## Current Scope
 
-Phase 2 currently supports fixture-first ingestion:
+Phase 2 supports fixture-first ingestion, and Phase 3A adds fixture-first Terraform plan analysis:
 
 - One deployment run per fixture envelope.
 - Shallow evidence references for Terraform plan JSON, Checkov JSON, and logs.
@@ -12,7 +12,9 @@ Phase 2 currently supports fixture-first ingestion:
 - Local evidence-file existence checks.
 - Optional Supabase writes for `deployment_runs` and `raw_evidence_files` metadata through fixture replay and verified GitHub webhook persistence.
 - Signature-verified GitHub `workflow_run` webhook mapping with dry-run responses and non-dry-run persistence.
-- No Terraform or Checkov parsing.
+- Deterministic Terraform plan summary parsing for already-loaded fixture JSON in `packages/analyzers`.
+- No persistence of Terraform parser output yet.
+- No Checkov parsing.
 - No LLM calls.
 
 ## Fixture Layout
@@ -93,6 +95,24 @@ SUPABASE_INGESTION_ACCESS_TOKEN=
 
 The Supabase-backed CLI still does not parse Terraform, parse Checkov, call LLMs, or execute infrastructure commands.
 
+## Terraform Plan Parser
+
+Phase 3A adds a package-level Terraform `show -json` parser for sanitized fixture data:
+
+```bash
+pnpm --filter @adia/analyzers test
+```
+
+The parser summarizes:
+
+- Creates, updates, deletes, and replacements.
+- Resource addresses, types, names, providers, and module addresses.
+- IAM-related changes.
+- Networking-related changes.
+- Public exposure indicators such as public CIDR ranges or public accessibility flags.
+
+Parser output currently stays in memory. It is not written to Supabase, exposed through an API route, or used for LLM insight generation yet.
+
 ## GitHub Actions Adapter
 
 Phase 2C adds a pure GitHub Actions workflow-run event adapter in `packages/ingestion`. It maps sanitized GitHub event data into the broader ADIA ingestion envelope.
@@ -155,7 +175,7 @@ This envelope is intentionally broader than a single GitHub event shape so futur
 Later phases will add:
 
 - GitHub artifact ingestion.
-- Terraform plan parsing.
+- Terraform parser persistence and API wiring.
 - Checkov finding parsing.
 - Deterministic anomaly detection.
 - Evidence-linked LLM insight generation.

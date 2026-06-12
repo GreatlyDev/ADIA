@@ -58,7 +58,7 @@ Planned entities:
 - `recommendations` - evidence-linked follow-up actions.
 - `evidence_links` - references to logs, plan paths, scan findings, commits, or run IDs.
 
-The base schema was implemented in Phase 1. Current Phase 2 work writes deployment runs and raw evidence metadata only; Terraform, Checkov, anomaly, insight, and recommendation records remain planned for later phases.
+The base schema was implemented in Phase 1. Current ingestion work writes deployment runs and raw evidence metadata. Phase 3A can summarize Terraform plan fixture JSON in memory, but Terraform summary persistence, Checkov, anomaly, insight, and recommendation records remain planned for later phases.
 
 ## API Roadmap
 
@@ -73,7 +73,7 @@ Planned API surface:
 - `POST /api/insights/run/:id` for server-side LLM insight generation.
 - `GET /api/projects/:id/runs` for dashboard data.
 
-Current Phase 2 work implements the signed GitHub workflow-run webhook route only. The other API routes remain roadmap items.
+Current work implements the signed GitHub workflow-run webhook route and a package-level Terraform fixture parser. The Terraform parser is not exposed as an API route yet. The other API routes remain roadmap items.
 
 ## Dashboard Roadmap
 
@@ -107,7 +107,8 @@ The dashboard currently remains a static placeholder UI.
 - Phase 0: Repo foundation and static starter app.
 - Phase 1: Supabase schema, Auth, RLS, and seed data.
 - Phase 2: Fixture ingestion, GitHub Actions ingestion contract, signed workflow-run webhook mapping, and metadata persistence.
-- Phase 3: Terraform and Checkov parsers.
+- Phase 3A: Fixture-only Terraform plan parser.
+- Phase 3B: Checkov parser and parser persistence planning.
 - Phase 4: Deterministic anomaly engine.
 - Phase 5: LLM insight service.
 - Phase 6: Realtime dashboard integration.

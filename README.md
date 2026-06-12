@@ -6,7 +6,7 @@ ADIA is an AI-assisted DevOps visibility dashboard for understanding deployment 
 
 ## Current Status
 
-Phase 0 and Phase 1 are complete. Phase 2 has started with fixture-based ingestion slices.
+Phase 0 and Phase 1 are complete. Phase 2 fixture and GitHub webhook ingestion slices are in place. Phase 3A adds deterministic Terraform plan parsing for sanitized fixture JSON only.
 
 This repository currently contains:
 
@@ -16,15 +16,15 @@ This repository currently contains:
 - Server-side Supabase fixture ingestion in `packages/ingestion`.
 - A pure GitHub Actions workflow-run event adapter for producing ADIA ingestion envelopes.
 - A server-side GitHub `workflow_run` webhook route that verifies signatures, supports dry-run envelope mapping, and persists non-dry-run envelope metadata to Supabase.
-- Analyzer package stubs in `packages/analyzers`.
-- Vitest tests for analyzer stubs and ingestion contract validation.
+- A deterministic Terraform plan parser in `packages/analyzers`, plus stubs for later Checkov, anomaly, and redaction work.
+- Vitest tests for analyzer parsing, property-based parser invariants, and ingestion contract validation.
 - Supabase schema migrations and seed data for the Phase 1 data model plus Phase 2B/2E raw evidence metadata.
 - Terraform directory placeholders that create no cloud resources.
 - Fixture directories, a validation replay script, and a Supabase-backed fixture ingestion CLI for a demo GitHub Actions deployment run.
 - Documentation for product scope, architecture, decisions, and learning notes.
 - Safe starter GitHub Actions workflows for CI and Terraform validation.
 
-Current Phase 2 work intentionally does not include Terraform parsing, Checkov parsing, LLM calls, artifact download, or autonomous remediation.
+Current work intentionally does not include Terraform parser persistence, Checkov parsing, LLM calls, artifact download, or autonomous remediation. Terraform parsing is currently package-level analysis over already-loaded fixture JSON only.
 
 ## How ADIA Is Different
 
@@ -64,7 +64,7 @@ Planned MVP capabilities:
 apps/web                 Next.js App Router + Tailwind starter dashboard
 packages/core            Shared ADIA TypeScript types and ingestion contracts
 packages/ingestion       Server-only Supabase fixture ingestion
-packages/analyzers       Placeholder parser/anomaly/redaction modules
+packages/analyzers       Deterministic Terraform parser plus future analyzer stubs
 supabase                 Schema migrations, placeholders, and seed data
 infra                    Safe Terraform placeholders for future modules/envs
 scripts/fixtures         Sanitized demo ingestion and evidence fixtures
@@ -140,6 +140,14 @@ pnpm exec tsx scripts/ingest-demo.ts
 
 The demo validates one deployment-run fixture and checks that referenced evidence files exist. It does not write to Supabase. See `docs/INGESTION_FIXTURES.md` for details.
 
+Run the Terraform plan parser tests:
+
+```bash
+pnpm --filter @adia/analyzers test
+```
+
+The parser reads already-loaded Terraform `show -json` values and returns deterministic summaries for fixture development. It does not execute Terraform, read credentials, write to Supabase, or call LLMs.
+
 Run the Phase 2B Supabase-backed fixture ingestion help command:
 
 ```bash
@@ -191,6 +199,7 @@ The scaffold and current contract-fixture slice have been verified with:
 - `pnpm lint`
 - `pnpm format`
 - `pnpm build`
+- `pnpm --filter @adia/analyzers test`
 - `pnpm exec tsx scripts/ingest-demo.ts`
 - `pnpm exec tsx scripts/ingest-fixture-to-supabase.ts --help`
 
@@ -201,7 +210,7 @@ Browser verification was also performed against the built Next.js app. The landi
 1. Phase 0 - Repository foundation, docs, starter UI, shared types, stubs, fixtures, and safe CI.
 2. Phase 1 - Supabase schema, Auth model, organizations, projects, RLS, and seed data.
 3. Phase 2 - Deployment run ingestion from GitHub Actions and fixture-based local ingestion.
-4. Phase 3 - Terraform plan parser and Checkov parser with deterministic risk summaries.
+4. Phase 3 - Terraform plan parser and Checkov parser with deterministic risk summaries. Phase 3A currently covers fixture-only Terraform plan parsing.
 5. Phase 4 - Anomaly engine and evidence model.
 6. Phase 5 - Server-side LLM structured insight generation.
 7. Phase 6 - Realtime dashboard backed by Supabase.
