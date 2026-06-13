@@ -2,9 +2,9 @@
 
 ## Scope
 
-Phase 3C defined how parsed Terraform and Checkov fixture output should be written to Supabase. Phase 3D adds schema readiness and server-only row builders. Phase 3E adds server-side orchestration for validated fixture parser output.
+Phase 3C defined how parsed Terraform and Checkov fixture output should be written to Supabase. Phase 3D adds schema readiness and server-only row builders. Phase 3E adds server-side orchestration for validated fixture parser output. Phase 3F adds a local CLI that validates a fixture envelope, reads local Terraform and Checkov JSON, runs parsers, and calls that orchestration.
 
-Current work does not add API routes, webhook parser execution, CLI parser execution, LLM calls, Terraform execution, Checkov execution, artifact download, or cloud commands.
+Current work does not add API routes, webhook parser execution, LLM calls, Terraform execution, Checkov execution, artifact download, or cloud commands.
 
 ## Current Inputs
 
@@ -15,7 +15,7 @@ Future parser persistence will start from data ADIA already has:
 - One or more `raw_evidence_files` rows for Terraform plan JSON, Checkov JSON, and logs.
 - In-memory parser output from `packages/analyzers`.
 
-The existing parsers are pure functions. They receive already-loaded JSON values and return ADIA domain types. They do not read files, fetch artifacts, write to Supabase, call LLMs, or run infrastructure tools. Phase 3D row builders transform parser output into database row shapes. Phase 3E orchestration receives those parser outputs plus source evidence paths and performs Supabase upserts from server-side code.
+The existing parsers are pure functions. They receive already-loaded JSON values and return ADIA domain types. They do not fetch artifacts, write to Supabase, call LLMs, or run infrastructure tools. Phase 3D row builders transform parser output into database row shapes. Phase 3E orchestration receives those parser outputs plus source evidence paths and performs Supabase upserts from server-side code. Phase 3F local replay is the first caller that reads fixture files and passes parsed output to that orchestration.
 
 ## Future Server Boundary
 
@@ -181,4 +181,4 @@ Before wiring parser persistence into runtime routes or workers, ADIA should sti
 - Tests around the future route, worker, or CLI wrapper.
 - Documentation updates showing that parser output is now persisted.
 
-The parser idempotency migration, row-mapping tests, and fixture persistence orchestration are now present. Until a trusted caller invokes the orchestration function, parser output remains in memory only.
+The parser idempotency migration, row-mapping tests, fixture persistence orchestration, and local replay CLI are now present. Route, webhook, and worker integrations remain future work.

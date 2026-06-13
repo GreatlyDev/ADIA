@@ -3,12 +3,16 @@
   "version": "0.0.0",
   "private": true,
   "packageManager": "pnpm@10.24.0",
+  "dependencies": {
+    "@adia/ingestion": "workspace:*"
+  },
   "scripts": {
     "dev": "pnpm --filter @adia/web dev",
     "build": "pnpm -r --if-present build",
     "typecheck": "pnpm -r --if-present typecheck",
     "test": "pnpm -r --if-present test",
     "lint": "pnpm -r --if-present lint",
+    "replay:parsed-fixture": "tsx scripts/replay-parsed-fixture-to-supabase.ts",
     "format": "prettier --check \"**/*.{css,js,json,jsonc,md,mjs,ts,tsx,yaml,yml}\"",
     "format:write": "prettier --write \"**/*.{css,js,json,jsonc,md,mjs,ts,tsx,yaml,yml}\""
   },

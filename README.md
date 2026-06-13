@@ -6,7 +6,7 @@ ADIA is an AI-assisted DevOps visibility dashboard for understanding deployment 
 
 ## Current Status
 
-Phase 0 and Phase 1 are complete. Phase 2 fixture and GitHub webhook ingestion slices are in place. Phase 3A adds deterministic Terraform plan parsing for sanitized fixture JSON only. Phase 3B adds deterministic Checkov fixture parsing. Phase 3C documents parser persistence, Phase 3D adds schema readiness plus row builders, and Phase 3E adds server-only parser persistence orchestration for validated fixture output.
+Phase 0 and Phase 1 are complete. Phase 2 fixture and GitHub webhook ingestion slices are in place. Phase 3A adds deterministic Terraform plan parsing for sanitized fixture JSON only. Phase 3B adds deterministic Checkov fixture parsing. Phase 3C documents parser persistence, Phase 3D adds schema readiness plus row builders, Phase 3E adds server-only parser persistence orchestration, and Phase 3F adds a local fixture replay CLI.
 
 This repository currently contains:
 
@@ -22,10 +22,11 @@ This repository currently contains:
 - Supabase schema migrations and seed data for the Phase 1 data model, Phase 2B/2E raw evidence metadata, and Phase 3D parser idempotency fields.
 - Terraform directory placeholders that create no cloud resources.
 - Fixture directories, a validation replay script, and a Supabase-backed fixture ingestion CLI for a demo GitHub Actions deployment run.
+- A local parsed-fixture replay CLI that validates the fixture envelope, reads local Terraform/Checkov JSON, runs deterministic parsers, and persists parsed output through server-side code.
 - Documentation for product scope, architecture, parser persistence planning, decisions, and learning notes.
 - Safe starter GitHub Actions workflows for CI and Terraform validation.
 
-Current work intentionally does not include parser API route wiring, automatic webhook parser execution, LLM calls, artifact download, Checkov/Terraform execution, or autonomous remediation. Terraform and Checkov parsing are currently package-level analysis over already-loaded fixture JSON only, and parser persistence orchestration is limited to validated fixture data passed from trusted server-side callers.
+Current work intentionally does not include parser API route wiring, automatic webhook parser execution, LLM calls, artifact download, Checkov/Terraform execution, or autonomous remediation. Terraform and Checkov parsing are currently package-level analysis over already-loaded fixture JSON only, and parser persistence is limited to validated local fixture replay or trusted server-side callers.
 
 ## How ADIA Is Different
 
@@ -133,6 +134,14 @@ pnpm format
 pnpm build
 ```
 
+Replay the parsed fixture locally into Supabase:
+
+```bash
+pnpm replay:parsed-fixture
+```
+
+This validates the envelope, upserts deployment and raw evidence metadata, reads local Terraform and Checkov fixture JSON, runs deterministic parsers, and persists parsed evidence rows. It does not execute Terraform, execute Checkov, call LLMs, fetch artifacts, or expose API routes.
+
 Run the Phase 2 fixture ingestion demo:
 
 ```bash
@@ -213,7 +222,7 @@ Browser verification was also performed against the built Next.js app. The landi
 1. Phase 0 - Repository foundation, docs, starter UI, shared types, stubs, fixtures, and safe CI.
 2. Phase 1 - Supabase schema, Auth model, organizations, projects, RLS, and seed data.
 3. Phase 2 - Deployment run ingestion from GitHub Actions and fixture-based local ingestion.
-4. Phase 3 - Terraform plan parser and Checkov parser with deterministic risk summaries. Phase 3A covers fixture-only Terraform plan parsing, Phase 3B covers fixture-only Checkov parsing, Phase 3C covers parser persistence planning, Phase 3D covers schema readiness plus row builders, and Phase 3E covers fixture-only parser persistence orchestration.
+4. Phase 3 - Terraform plan parser and Checkov parser with deterministic risk summaries. Phase 3A covers fixture-only Terraform plan parsing, Phase 3B covers fixture-only Checkov parsing, Phase 3C covers parser persistence planning, Phase 3D covers schema readiness plus row builders, Phase 3E covers fixture-only parser persistence orchestration, and Phase 3F covers local parsed-fixture replay.
 5. Phase 4 - Anomaly engine and evidence model.
 6. Phase 5 - Server-side LLM structured insight generation.
 7. Phase 6 - Realtime dashboard backed by Supabase.

@@ -106,3 +106,10 @@ This file records important technical and product decisions for ADIA. New decisi
 - Context: ADIA needs to prove parser persistence can replay safely before routes, webhook workers, or artifact ingestion call it automatically.
 - Decision: Phase 3E adds a server-side orchestration function that persists already-parsed fixture Terraform and Checkov output through existing `raw_evidence_files` rows and Phase 3D row builders.
 - Consequences: Parser persistence can now be tested end to end at the package level. External API surfaces, automatic webhook parser execution, artifact download, anomaly detection, and LLM insight generation remain separate future phases.
+
+## ADR-016: Use Local Fixture Replay Before Parser API Wiring
+
+- Status: Accepted
+- Context: ADIA needs a safe way to demo parser persistence against local fixtures before accepting parser writes through routes, webhooks, or workers.
+- Decision: Phase 3F adds a local server-side replay CLI that validates an existing envelope, reads local Terraform and Checkov JSON fixtures, runs deterministic parsers, and persists output through Phase 3E orchestration.
+- Consequences: Portfolio demos can exercise the parser persistence path end to end without cloud execution or LLM calls. Production-style API or worker wiring remains future work.

@@ -17,7 +17,8 @@ Phase 2 supports fixture-first ingestion. Phase 3A adds fixture-first Terraform 
 - Parser persistence planning in `docs/PARSER_PERSISTENCE.md`.
 - Parser persistence schema readiness and row builders for a future write phase.
 - Server-side parser persistence orchestration for already-parsed fixture output.
-- No API route, webhook, or CLI wiring for Terraform or Checkov parser persistence yet.
+- Local parsed-fixture replay CLI for validating, parsing, and persisting fixture evidence.
+- No API route or webhook wiring for Terraform or Checkov parser persistence yet.
 - No LLM calls.
 
 ## Fixture Layout
@@ -177,6 +178,30 @@ The route loads ADIA context from server-side environment variables:
 With `dryRun=true`, the route verifies, validates, maps, and returns the generated envelope without creating a Supabase client.
 
 Without `dryRun=true`, the route persists one `deployment_runs` row and one `raw_evidence_files` row per configured evidence reference. It does not fetch GitHub artifacts or read evidence files, so webhook-created raw evidence rows have empty file size and SHA-256 hash values until artifact ingestion is added.
+
+## Parsed Fixture Replay
+
+Phase 3F adds a local server-side replay command:
+
+```bash
+pnpm replay:parsed-fixture
+```
+
+The command:
+
+- Validates the fixture envelope.
+- Upserts `deployment_runs` and `raw_evidence_files` metadata.
+- Reads local Terraform `show -json` and Checkov JSON fixtures referenced by the envelope.
+- Runs the deterministic Terraform and Checkov parsers.
+- Persists `terraform_plans`, `terraform_resource_changes`, `iac_scan_findings`, and `evidence_links`.
+
+You can pass a different fixture envelope path relative to `scripts/fixtures`:
+
+```bash
+pnpm replay:parsed-fixture -- github-actions/deploy-staging.json
+```
+
+This command does not execute Terraform, execute Checkov, call LLMs, fetch artifacts, expose API routes, or run cloud commands.
 
 ## Envelope Contract
 

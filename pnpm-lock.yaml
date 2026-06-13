@@ -6,6 +6,10 @@ settings:
 
 importers:
   .:
+    dependencies:
+      "@adia/ingestion":
+        specifier: workspace:*
+        version: link:packages/ingestion
     devDependencies:
       prettier:
         specifier: ^3.6.0
@@ -90,6 +94,9 @@ importers:
 
   packages/ingestion:
     dependencies:
+      "@adia/analyzers":
+        specifier: workspace:*
+        version: link:../analyzers
       "@adia/core":
         specifier: workspace:*
         version: link:../core
