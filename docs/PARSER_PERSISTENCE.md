@@ -2,9 +2,9 @@
 
 ## Scope
 
-Phase 3C defines how parsed Terraform and Checkov fixture output will be written to Supabase in a future phase. It is a design-only phase.
+Phase 3C defined how parsed Terraform and Checkov fixture output should be written to Supabase in a future phase. Phase 3D adds schema readiness and server-only row builders, but still does not write parser output at runtime.
 
-This phase does not add persistence code, schema migrations, API routes, LLM calls, Terraform execution, Checkov execution, artifact download, or cloud commands.
+Current work does not add parser write orchestration, API routes, LLM calls, Terraform execution, Checkov execution, artifact download, or cloud commands.
 
 ## Current Inputs
 
@@ -15,11 +15,11 @@ Future parser persistence will start from data ADIA already has:
 - One or more `raw_evidence_files` rows for Terraform plan JSON, Checkov JSON, and logs.
 - In-memory parser output from `packages/analyzers`.
 
-The existing parsers are pure functions. They receive already-loaded JSON values and return ADIA domain types. They do not read files, fetch artifacts, write to Supabase, call LLMs, or run infrastructure tools.
+The existing parsers are pure functions. They receive already-loaded JSON values and return ADIA domain types. They do not read files, fetch artifacts, write to Supabase, call LLMs, or run infrastructure tools. Phase 3D row builders only transform parser output into database row shapes; they do not perform Supabase writes.
 
 ## Future Server Boundary
 
-Parser persistence should live in server-only code, most likely `packages/ingestion`, behind a function shaped like:
+Parser persistence orchestration should live in server-only code, most likely `packages/ingestion`, behind a future function shaped like:
 
 ```ts
 persistParsedEvidenceForRun({
@@ -85,16 +85,16 @@ Schema gap to address before implementation: `IacScanFinding` has `evidenceRefs`
 
 Parser persistence must be safe to replay. Re-running the same fixture or webhook processing job should update existing rows instead of duplicating parser output.
 
-Recommended future migration additions:
+Phase 3D adds these migration pieces:
 
-- Add `source_evidence_file_id uuid` to `terraform_plans`, referencing `raw_evidence_files(id)`.
-- Add `parser_version text not null` to parser-owned tables.
-- Add `source_content_sha256 text` where useful for detecting source changes.
-- Add `fingerprint text not null` to `terraform_resource_changes` and `iac_scan_findings`.
-- Add a unique index on `terraform_plans (deployment_run_id, source_evidence_file_id, parser_version)`.
-- Add a unique index on `terraform_resource_changes (terraform_plan_id, fingerprint)`.
-- Add a unique index on `iac_scan_findings (deployment_run_id, source_evidence_file_id, scanner, fingerprint)`.
-- Add a unique index to `evidence_links` for `(organization_id, source_table, source_id, target_table, target_id, label)` with nullable labels normalized by the index expression.
+- `source_evidence_file_id uuid` on `terraform_plans` and `iac_scan_findings`, referencing `raw_evidence_files(id)`.
+- `parser_version text not null` on parser-owned tables.
+- `source_content_sha256 text` where useful for detecting source changes.
+- `fingerprint text` on `terraform_resource_changes` and `iac_scan_findings`.
+- A unique index on `terraform_plans (deployment_run_id, source_evidence_file_id, parser_version)`.
+- A unique index on `terraform_resource_changes (terraform_plan_id, fingerprint)`.
+- A unique index on `iac_scan_findings (deployment_run_id, source_evidence_file_id, scanner, fingerprint)`.
+- A non-null evidence link label with a unique index on `(organization_id, source_table, source_id, target_table, target_id, label)`.
 
 Recommended fingerprints:
 
@@ -158,12 +158,11 @@ Property-based tests can later exercise parser-output replay behavior by generat
 
 ## Implementation Readiness Checklist
 
-Before implementing parser persistence, ADIA should have:
+Before implementing runtime parser persistence, ADIA should still add:
 
-- A migration for parser idempotency columns and unique indexes.
 - A clear decision on raw Terraform plan storage versus redacted summary-only storage.
-- A server-only persistence module in `packages/ingestion`.
+- A server-only write orchestration module in `packages/ingestion`.
 - Tests for row mapping, replay idempotency, tenant checks, and evidence links.
 - Documentation updates showing that parser output is now persisted.
 
-Until those items are implemented, parser output remains in memory only.
+The parser idempotency migration and row-mapping tests are now present. Until write orchestration is implemented, parser output remains in memory only.

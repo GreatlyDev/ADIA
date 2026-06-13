@@ -92,3 +92,10 @@ This file records important technical and product decisions for ADIA. New decisi
 - Context: ADIA now has deterministic Terraform and Checkov parsers plus existing Supabase evidence tables, but replay safety, tenant boundaries, and evidence links need a clear design before database writes are added.
 - Decision: Phase 3C documents parser persistence before implementation. Future writes should run server-side, re-check run and raw evidence ownership, use idempotent upserts backed by unique indexes, and link every persisted parser output to source evidence.
 - Consequences: Parser output remains in memory for now. A later implementation phase can add migrations and server-only persistence with fewer surprises around RLS, duplicate rows, and evidence traceability.
+
+## ADR-014: Add Parser Idempotency Schema Before Runtime Writes
+
+- Status: Accepted
+- Context: Parser output needs stable conflict keys and evidence references before ADIA can safely replay fixture or webhook processing jobs.
+- Decision: Phase 3D adds parser source evidence fields, parser versions, deterministic fingerprints, IaC evidence refs, source-evidence consistency triggers, and duplicate-safe evidence-link labels before runtime parser persistence is wired.
+- Consequences: Future persistence can use upsert-style row writes without duplicating parser output. The application still does not write Terraform or Checkov parser output to Supabase at runtime.

@@ -64,7 +64,7 @@ The deterministic pipeline will run before any LLM step:
 4. Detect anomalies in status, duration, failure pattern, resource blast radius, and exposure changes.
 5. Produce structured evidence records for dashboard and LLM use.
 
-Phase 3A implements the Terraform parsing step for local fixture data only. Phase 3B implements the IaC scanner parsing step for local fixture data only. Phase 3C defines the future persistence boundary for parser output. The remaining analysis steps and database persistence implementation are still planned.
+Phase 3A implements the Terraform parsing step for local fixture data only. Phase 3B implements the IaC scanner parsing step for local fixture data only. Phase 3C defines the future persistence boundary for parser output. Phase 3D adds schema readiness and row builders for future persistence, but does not write parser output at runtime. The remaining analysis steps and database persistence orchestration are still planned.
 
 ## Parser Persistence Plan
 
@@ -86,7 +86,7 @@ terraform_plans + terraform_resource_changes + iac_scan_findings
 evidence_links
 ```
 
-The future persistence module should live outside browser code, re-check deployment run and raw evidence ownership before writing, and use idempotent upserts backed by unique database indexes. `docs/PARSER_PERSISTENCE.md` captures the detailed plan, including schema gaps, evidence-link labels, RLS-safe caller modes, and tests.
+The persistence module should live outside browser code, re-check deployment run and raw evidence ownership before writing, and use idempotent upserts backed by unique database indexes. Phase 3D adds the schema fields, unique indexes, and pure row builders needed for that future step. `docs/PARSER_PERSISTENCE.md` captures the detailed plan, including remaining write orchestration work.
 
 ## Planned LLM Insight Pipeline
 
@@ -112,7 +112,7 @@ Supabase will provide:
 - Realtime subscriptions.
 - Edge functions only if they fit future ingestion or processing needs.
 
-Phase 1 defines schema and RLS. Phase 2B/2E write deployment runs and raw evidence metadata. Phase 3C plans future parser persistence into the existing evidence tables, but does not implement those writes yet.
+Phase 1 defines schema and RLS. Phase 2B/2E write deployment runs and raw evidence metadata. Phase 3D prepares parser evidence tables for idempotent future writes, but does not implement runtime parser persistence yet.
 
 ## Phase 1 Schema Foundation
 

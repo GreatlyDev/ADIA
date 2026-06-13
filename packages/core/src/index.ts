@@ -197,8 +197,8 @@ export interface EvidenceLink {
   sourceId: string;
   targetTable: EvidenceTable;
   targetId: string;
+  label: string;
   createdAt: string;
-  label?: string;
   metadata?: Record<string, unknown>;
 }
 
