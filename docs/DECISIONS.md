@@ -99,3 +99,10 @@ This file records important technical and product decisions for ADIA. New decisi
 - Context: Parser output needs stable conflict keys and evidence references before ADIA can safely replay fixture or webhook processing jobs.
 - Decision: Phase 3D adds parser source evidence fields, parser versions, deterministic fingerprints, IaC evidence refs, source-evidence consistency triggers, and duplicate-safe evidence-link labels before runtime parser persistence is wired.
 - Consequences: Future persistence can use upsert-style row writes without duplicating parser output. The application still does not write Terraform or Checkov parser output to Supabase at runtime.
+
+## ADR-015: Persist Parsed Fixture Output Before API Wiring
+
+- Status: Accepted
+- Context: ADIA needs to prove parser persistence can replay safely before routes, webhook workers, or artifact ingestion call it automatically.
+- Decision: Phase 3E adds a server-side orchestration function that persists already-parsed fixture Terraform and Checkov output through existing `raw_evidence_files` rows and Phase 3D row builders.
+- Consequences: Parser persistence can now be tested end to end at the package level. External API surfaces, automatic webhook parser execution, artifact download, anomaly detection, and LLM insight generation remain separate future phases.

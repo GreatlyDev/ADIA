@@ -58,7 +58,7 @@ Planned entities:
 - `recommendations` - evidence-linked follow-up actions.
 - `evidence_links` - references to logs, plan paths, scan findings, commits, or run IDs.
 
-The base schema was implemented in Phase 1. Current ingestion work writes deployment runs and raw evidence metadata. Phase 3A can summarize Terraform plan fixture JSON in memory, and Phase 3B can normalize Checkov fixture JSON in memory. Phase 3C documents parser persistence, and Phase 3D adds schema readiness plus row builders. Runtime parser persistence, anomaly, insight, and recommendation writes remain planned for future phases.
+The base schema was implemented in Phase 1. Current ingestion work writes deployment runs and raw evidence metadata. Phase 3A can summarize Terraform plan fixture JSON in memory, and Phase 3B can normalize Checkov fixture JSON in memory. Phase 3C documents parser persistence, Phase 3D adds schema readiness plus row builders, and Phase 3E adds fixture-only parser persistence orchestration. API/worker wiring, anomaly, insight, and recommendation writes remain planned for future phases.
 
 ## API Roadmap
 
@@ -73,7 +73,7 @@ Planned API surface:
 - `POST /api/insights/run/:id` for server-side LLM insight generation.
 - `GET /api/projects/:id/runs` for dashboard data.
 
-Current work implements the signed GitHub workflow-run webhook route plus package-level Terraform and Checkov fixture parsers. Phase 3D adds parser persistence schema readiness and row builders only. The parsers are not exposed as API routes yet. The other API routes remain roadmap items.
+Current work implements the signed GitHub workflow-run webhook route plus package-level Terraform and Checkov fixture parsers. Phase 3E adds parser persistence orchestration for trusted fixture callers only. The parsers are not exposed as API routes yet. The other API routes remain roadmap items.
 
 ## Dashboard Roadmap
 
@@ -111,6 +111,7 @@ The dashboard currently remains a static placeholder UI.
 - Phase 3B: Fixture-only Checkov parser.
 - Phase 3C: Parser persistence planning.
 - Phase 3D: Parser persistence schema readiness and row builders.
+- Phase 3E: Fixture-only parser persistence orchestration.
 - Phase 4: Deterministic anomaly engine.
 - Phase 5: LLM insight service.
 - Phase 6: Realtime dashboard integration.

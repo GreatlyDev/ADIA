@@ -4,7 +4,7 @@
 
 Phase 1 gives ADIA a secure database foundation for deployment visibility. Phase 2B extends it with raw evidence-file metadata for fixture ingestion, Phase 2E reuses that path for verified GitHub webhook persistence, and Phase 3D adds parser idempotency fields for future writes. The schema stores organizations, projects, deployment runs, raw evidence metadata, Terraform evidence, IaC scan findings, deterministic anomaly records, insight records, recommendations, and evidence links.
 
-These phases do not wire Supabase into the browser application. They also do not add parser execution, deterministic analyzer execution from routes, runtime parser output persistence, LLM generation, live dashboard queries, Edge Functions, artifact download, or Terraform apply behavior.
+These phases do not wire Supabase into the browser application. They also do not add parser execution from routes, deterministic analyzer execution from webhooks, LLM generation, live dashboard queries, Edge Functions, artifact download, or Terraform apply behavior.
 
 ## Tenant Model
 
@@ -70,7 +70,7 @@ The future parser persistence layer should write:
 
 The Phase 3D migration adds replay-safe fields and indexes: source raw evidence references, parser versions, deterministic fingerprints, an `evidence_refs` column for `iac_scan_findings`, source-evidence consistency triggers, and duplicate-prevention indexes for parser rows and evidence links.
 
-Runtime persistence is still future work. The migration prepares the database, but no route or CLI writes parser output yet.
+Phase 3E adds a server-side package function that can upsert parser output for validated fixture data. No route, webhook, or CLI invokes it automatically yet.
 
 See `docs/PARSER_PERSISTENCE.md` for the detailed future design.
 

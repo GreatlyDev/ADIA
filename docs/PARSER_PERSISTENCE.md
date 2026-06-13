@@ -2,9 +2,9 @@
 
 ## Scope
 
-Phase 3C defined how parsed Terraform and Checkov fixture output should be written to Supabase in a future phase. Phase 3D adds schema readiness and server-only row builders, but still does not write parser output at runtime.
+Phase 3C defined how parsed Terraform and Checkov fixture output should be written to Supabase. Phase 3D adds schema readiness and server-only row builders. Phase 3E adds server-side orchestration for validated fixture parser output.
 
-Current work does not add parser write orchestration, API routes, LLM calls, Terraform execution, Checkov execution, artifact download, or cloud commands.
+Current work does not add API routes, webhook parser execution, CLI parser execution, LLM calls, Terraform execution, Checkov execution, artifact download, or cloud commands.
 
 ## Current Inputs
 
@@ -15,11 +15,28 @@ Future parser persistence will start from data ADIA already has:
 - One or more `raw_evidence_files` rows for Terraform plan JSON, Checkov JSON, and logs.
 - In-memory parser output from `packages/analyzers`.
 
-The existing parsers are pure functions. They receive already-loaded JSON values and return ADIA domain types. They do not read files, fetch artifacts, write to Supabase, call LLMs, or run infrastructure tools. Phase 3D row builders only transform parser output into database row shapes; they do not perform Supabase writes.
+The existing parsers are pure functions. They receive already-loaded JSON values and return ADIA domain types. They do not read files, fetch artifacts, write to Supabase, call LLMs, or run infrastructure tools. Phase 3D row builders transform parser output into database row shapes. Phase 3E orchestration receives those parser outputs plus source evidence paths and performs Supabase upserts from server-side code.
 
 ## Future Server Boundary
 
-Parser persistence orchestration should live in server-only code, most likely `packages/ingestion`, behind a future function shaped like:
+Parser persistence orchestration lives in server-only package code:
+
+```ts
+persistParsedFixtureEvidence(client, {
+  organizationId,
+  deploymentRunId,
+  terraform: {
+    sourceEvidencePath,
+    summary,
+  },
+  checkov: {
+    sourceEvidencePath,
+    findings,
+  },
+});
+```
+
+Future route, worker, or CLI wiring may wrap this with a broader function shaped like:
 
 ```ts
 persistParsedEvidenceForRun({
@@ -52,7 +69,7 @@ The future write sequence should be:
 8. Persist traceability rows to `evidence_links`.
 9. Return persisted row IDs and counts for logs, API responses, and tests.
 
-The parser persistence layer should treat the database as the source of tenant truth. The caller may pass IDs, but the persistence function must re-read the deployment run and raw evidence rows before writing.
+The parser persistence layer treats existing `raw_evidence_files` rows as source evidence truth. Phase 3E resolves those rows by organization, deployment run, evidence kind, format, and path before writing parser output.
 
 ## Terraform Plan Writes
 
@@ -158,11 +175,10 @@ Property-based tests can later exercise parser-output replay behavior by generat
 
 ## Implementation Readiness Checklist
 
-Before implementing runtime parser persistence, ADIA should still add:
+Before wiring parser persistence into runtime routes or workers, ADIA should still add:
 
 - A clear decision on raw Terraform plan storage versus redacted summary-only storage.
-- A server-only write orchestration module in `packages/ingestion`.
-- Tests for row mapping, replay idempotency, tenant checks, and evidence links.
+- Tests around the future route, worker, or CLI wrapper.
 - Documentation updates showing that parser output is now persisted.
 
-The parser idempotency migration and row-mapping tests are now present. Until write orchestration is implemented, parser output remains in memory only.
+The parser idempotency migration, row-mapping tests, and fixture persistence orchestration are now present. Until a trusted caller invokes the orchestration function, parser output remains in memory only.

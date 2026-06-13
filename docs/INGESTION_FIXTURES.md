@@ -16,7 +16,8 @@ Phase 2 supports fixture-first ingestion. Phase 3A adds fixture-first Terraform 
 - Deterministic Checkov finding parsing for already-loaded fixture JSON in `packages/analyzers`.
 - Parser persistence planning in `docs/PARSER_PERSISTENCE.md`.
 - Parser persistence schema readiness and row builders for a future write phase.
-- No persistence of Terraform or Checkov parser output yet.
+- Server-side parser persistence orchestration for already-parsed fixture output.
+- No API route, webhook, or CLI wiring for Terraform or Checkov parser persistence yet.
 - No LLM calls.
 
 ## Fixture Layout
@@ -194,8 +195,8 @@ This envelope is intentionally broader than a single GitHub event shape so futur
 Later phases will add:
 
 - GitHub artifact ingestion.
-- Terraform parser persistence and API wiring.
-- Checkov parser persistence and API wiring.
+- Terraform parser persistence API or worker wiring.
+- Checkov parser persistence API or worker wiring.
 - Deterministic anomaly detection.
 - Evidence-linked LLM insight generation.
 
