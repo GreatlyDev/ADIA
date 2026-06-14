@@ -64,7 +64,7 @@ The deterministic pipeline will run before any LLM step:
 4. Detect anomalies in status, duration, failure pattern, resource blast radius, and exposure changes.
 5. Produce structured evidence records for dashboard and LLM use.
 
-Phase 3A implements the Terraform parsing step for local fixture data only. Phase 3B implements the IaC scanner parsing step for local fixture data only. Phase 3C defines the persistence boundary for parser output. Phase 3D adds schema readiness and row builders. Phase 3E adds package-level persistence orchestration for validated fixture parser output. Phase 3F adds a local CLI that invokes that orchestration for fixture replay, but does not wire it to routes or webhooks. Phase 4A adds deterministic anomaly generation over validated deployment run, Terraform, and Checkov parser data in memory only. Phase 4B documents how those anomalies should later be persisted. Phase 4C adds anomaly schema readiness and pure row builders. Phase 4D adds package-level anomaly persistence orchestration for already-persisted fixture/parser rows. Phase 4E invokes anomaly persistence from local parsed-fixture replay after parser persistence succeeds. Runtime route, webhook, and dashboard wiring remain planned.
+Phase 3A implements the Terraform parsing step for local fixture data only. Phase 3B implements the IaC scanner parsing step for local fixture data only. Phase 3C defines the persistence boundary for parser output. Phase 3D adds schema readiness and row builders. Phase 3E adds package-level persistence orchestration for validated fixture parser output. Phase 3F adds a local CLI that invokes that orchestration for fixture replay, but does not wire it to routes or webhooks. Phase 4A adds deterministic anomaly generation over validated deployment run, Terraform, and Checkov parser data in memory only. Phase 4B documents how those anomalies should later be persisted. Phase 4C adds anomaly schema readiness and pure row builders. Phase 4D adds package-level anomaly persistence orchestration for already-persisted fixture/parser rows. Phase 4E invokes anomaly persistence from local parsed-fixture replay after parser persistence succeeds. Phase 4F documents future RLS-safe anomaly dashboard/API reads. Runtime route, webhook, and dashboard wiring remain planned.
 
 ## Anomaly Persistence
 
@@ -84,6 +84,28 @@ anomalies + evidence_links
 ```
 
 Phase 4C prepares this path by adding replay-safe anomaly columns, constraints, indexes, and pure row builders that map `Anomaly` objects plus persisted anomaly IDs into `anomalies` and `evidence_links` write rows. Phase 4D implements a trusted server-side writer for fixture/parser data: it resolves the deployment run and persisted parser rows by organization/run scope, runs the deterministic anomaly engine with persisted evidence IDs, verifies generated evidence refs, then upserts anomalies and evidence links. Phase 4E wires that writer into local parsed-fixture replay. Route, webhook, and dashboard callers remain future work. See `docs/ANOMALY_PERSISTENCE.md` for the detailed planning notes.
+
+## Anomaly Dashboard/API Read Model
+
+Phase 4F documents the future read side after anomaly persistence:
+
+```text
+anomalies + evidence_links
+        |
+        v
+authenticated RLS-protected Supabase reads
+        |
+        v
+project anomaly feed + run anomaly panel
+        |
+        v
+evidence drill-down through allowlisted source tables
+        |
+        v
+future Realtime Tailwind dashboard
+```
+
+The planned dashboard/API path should use authenticated user context, not service-role credentials, for normal reads. It should query by organization plus deployment run or project-derived run IDs, resolve evidence links through allowlisted source tables, and add Realtime subscriptions only when live dashboard data is implemented. See `docs/ANOMALY_DASHBOARD_API_PLAN.md`.
 
 ## Parser Persistence Plan
 
@@ -131,7 +153,7 @@ Supabase will provide:
 - Realtime subscriptions.
 - Edge functions only if they fit future ingestion or processing needs.
 
-Phase 1 defines schema and RLS. Phase 2B/2E write deployment runs and raw evidence metadata. Phase 3D prepares parser evidence tables for idempotent writes. Phase 3E can upsert parser outputs from trusted server-side fixture callers. Phase 3F provides a local replay CLI for those fixture writes. Phase 4B defines the anomaly persistence boundary, Phase 4C prepares anomaly fields and row builders, Phase 4D adds trusted server-side anomaly persistence orchestration, and Phase 4E calls it from local parsed-fixture replay. Dashboard and webhook flows still do not invoke parser or anomaly persistence automatically.
+Phase 1 defines schema and RLS. Phase 2B/2E write deployment runs and raw evidence metadata. Phase 3D prepares parser evidence tables for idempotent writes. Phase 3E can upsert parser outputs from trusted server-side fixture callers. Phase 3F provides a local replay CLI for those fixture writes. Phase 4B defines the anomaly persistence boundary, Phase 4C prepares anomaly fields and row builders, Phase 4D adds trusted server-side anomaly persistence orchestration, Phase 4E calls it from local parsed-fixture replay, and Phase 4F plans authenticated anomaly/evidence reads for future dashboard/API work. Dashboard and webhook flows still do not invoke parser or anomaly persistence automatically.
 
 ## Phase 1 Schema Foundation
 
@@ -149,4 +171,4 @@ The `infra/` directory contains safe placeholders only in Phase 0. Providers and
 
 The frontend will be a Tailwind CSS dashboard built with Next.js App Router. It will show deployment health, Terraform risk, anomalies, AI insights, and recommendations.
 
-Phase 0 includes a static landing page and dashboard placeholder. Supabase Realtime will be added later.
+Phase 0 includes a static landing page and dashboard placeholder. Phase 4F plans anomaly dashboard read contracts and Realtime scope, but Supabase data wiring will be added later.

@@ -148,3 +148,10 @@ This file records important technical and product decisions for ADIA. New decisi
 - Context: ADIA needs an end-to-end local demo path for parser and anomaly persistence before webhook workers, API routes, or dashboard flows call the pipeline automatically.
 - Decision: Phase 4E extends local parsed-fixture replay to call Phase 4D anomaly persistence after parser persistence succeeds and to report anomaly plus evidence-link counts.
 - Consequences: Portfolio demos can replay raw evidence, parser output, and anomalies through trusted server-side code. Production-style automation, LLM insight generation, and infrastructure execution remain out of scope.
+
+## ADR-022: Plan Anomaly Read Model Before Dashboard/API Wiring
+
+- Status: Accepted
+- Context: ADIA now has persisted deterministic anomalies in local fixture replay, but dashboard and API reads need clear RLS-safe contracts before UI or route implementation.
+- Decision: Phase 4F documents the future anomaly feed, run panel, detail drawer, evidence drill-down, filters, Realtime scope, and tests before adding runtime dashboard/API code.
+- Consequences: Future dashboard work can use authenticated Supabase reads with explicit organization/run scope and allowlisted evidence resolution. Service-role dashboard reads, broad Realtime subscriptions, LLM calls, and infrastructure execution stay out of this phase.

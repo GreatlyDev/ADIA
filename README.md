@@ -6,7 +6,7 @@ ADIA is an AI-assisted DevOps visibility dashboard for understanding deployment 
 
 ## Current Status
 
-Phase 0 and Phase 1 are complete. Phase 2 fixture and GitHub webhook ingestion slices are in place. Phase 3A adds deterministic Terraform plan parsing for sanitized fixture JSON only. Phase 3B adds deterministic Checkov fixture parsing. Phase 3C documents parser persistence, Phase 3D adds schema readiness plus row builders, Phase 3E adds server-only parser persistence orchestration, Phase 3F adds a local fixture replay CLI, Phase 4A adds an in-memory deterministic anomaly engine for validated fixture/parser data, Phase 4B documents future anomaly persistence, Phase 4C adds anomaly persistence schema readiness plus pure server-side row builders, Phase 4D adds server-only anomaly persistence orchestration for validated fixture/parser data, and Phase 4E wires anomaly persistence into local parsed-fixture replay.
+Phase 0 and Phase 1 are complete. Phase 2 fixture and GitHub webhook ingestion slices are in place. Phase 3A adds deterministic Terraform plan parsing for sanitized fixture JSON only. Phase 3B adds deterministic Checkov fixture parsing. Phase 3C documents parser persistence, Phase 3D adds schema readiness plus row builders, Phase 3E adds server-only parser persistence orchestration, Phase 3F adds a local fixture replay CLI, Phase 4A adds an in-memory deterministic anomaly engine for validated fixture/parser data, Phase 4B documents future anomaly persistence, Phase 4C adds anomaly persistence schema readiness plus pure server-side row builders, Phase 4D adds server-only anomaly persistence orchestration for validated fixture/parser data, Phase 4E wires anomaly persistence into local parsed-fixture replay, and Phase 4F documents the future RLS-safe anomaly dashboard/API read model.
 
 This repository currently contains:
 
@@ -23,10 +23,10 @@ This repository currently contains:
 - Terraform directory placeholders that create no cloud resources.
 - Fixture directories, a validation replay script, and a Supabase-backed fixture ingestion CLI for a demo GitHub Actions deployment run.
 - A local parsed-fixture replay CLI that validates the fixture envelope, reads local Terraform/Checkov JSON, runs deterministic parsers, persists parsed output, and persists deterministic anomalies through server-side code.
-- Documentation for product scope, architecture, parser persistence planning, anomaly persistence orchestration, decisions, and learning notes.
+- Documentation for product scope, architecture, parser persistence planning, anomaly persistence orchestration, anomaly dashboard/API read planning, decisions, and learning notes.
 - Safe starter GitHub Actions workflows for CI and Terraform validation.
 
-Current work intentionally does not include parser/anomaly API route wiring, automatic webhook parser/anomaly execution, LLM calls, artifact download, Checkov/Terraform execution, dashboard data wiring, or autonomous remediation. Terraform, Checkov, and anomaly analysis are currently package-level analysis over already-loaded fixture/parser data only, parser persistence is limited to validated local fixture replay or trusted server-side callers, and anomaly persistence is limited to trusted server-side fixture/parser orchestration plus local parsed-fixture replay.
+Current work intentionally does not include parser/anomaly API route wiring, automatic webhook parser/anomaly execution, LLM calls, artifact download, Checkov/Terraform execution, dashboard data wiring, or autonomous remediation. Terraform, Checkov, and anomaly analysis are currently package-level analysis over already-loaded fixture/parser data only, parser persistence is limited to validated local fixture replay or trusted server-side callers, anomaly persistence is limited to trusted server-side fixture/parser orchestration plus local parsed-fixture replay, and anomaly dashboard/API integration is planning-only.
 
 ## How ADIA Is Different
 
@@ -160,7 +160,7 @@ The analyzers read already-loaded Terraform `show -json`, Checkov JSON, and ADIA
 
 Phase 3E adds a server-only package function that can persist already-parsed fixture outputs to Supabase when a trusted caller passes existing raw evidence paths. Phase 3F wires that path to local fixture replay only; it is still not wired to an API route or webhook.
 
-Phase 4D adds a server-only package function that reads one scoped deployment run and already-persisted parser rows, runs deterministic anomaly detection with persisted evidence IDs, then upserts anomalies and supporting evidence links. Phase 4E calls that function from local parsed-fixture replay only. It is not wired to an API route, webhook worker, LLM step, or dashboard yet.
+Phase 4D adds a server-only package function that reads one scoped deployment run and already-persisted parser rows, runs deterministic anomaly detection with persisted evidence IDs, then upserts anomalies and supporting evidence links. Phase 4E calls that function from local parsed-fixture replay only. Phase 4F documents how future dashboard/API reads should query anomalies and evidence links through authenticated RLS-protected Supabase access. It is not wired to an API route, webhook worker, LLM step, or dashboard yet.
 
 Run the Phase 2B Supabase-backed fixture ingestion help command:
 
@@ -225,7 +225,7 @@ Browser verification was also performed against the built Next.js app. The landi
 2. Phase 1 - Supabase schema, Auth model, organizations, projects, RLS, and seed data.
 3. Phase 2 - Deployment run ingestion from GitHub Actions and fixture-based local ingestion.
 4. Phase 3 - Terraform plan parser and Checkov parser with deterministic risk summaries. Phase 3A covers fixture-only Terraform plan parsing, Phase 3B covers fixture-only Checkov parsing, Phase 3C covers parser persistence planning, Phase 3D covers schema readiness plus row builders, Phase 3E covers fixture-only parser persistence orchestration, and Phase 3F covers local parsed-fixture replay.
-5. Phase 4 - Anomaly engine and evidence model. Phase 4A covers fixture/parser-data anomaly generation in memory only, Phase 4B covers anomaly persistence planning, Phase 4C covers anomaly schema readiness plus pure row builders, Phase 4D covers server-only anomaly persistence orchestration, and Phase 4E covers local parsed-fixture anomaly replay.
+5. Phase 4 - Anomaly engine and evidence model. Phase 4A covers fixture/parser-data anomaly generation in memory only, Phase 4B covers anomaly persistence planning, Phase 4C covers anomaly schema readiness plus pure row builders, Phase 4D covers server-only anomaly persistence orchestration, Phase 4E covers local parsed-fixture anomaly replay, and Phase 4F covers anomaly dashboard/API read-model planning.
 6. Phase 5 - Server-side LLM structured insight generation.
 7. Phase 6 - Realtime dashboard backed by Supabase.
 8. Phase 7 - Optional Playwright E2E coverage, portfolio polish, and deployment hardening.

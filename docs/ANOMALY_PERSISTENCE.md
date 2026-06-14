@@ -2,7 +2,7 @@
 
 ## Scope
 
-Phase 4B defines how deterministic `Anomaly` objects from Phase 4A should be written to Supabase. Phase 4C implements the schema readiness and pure row builders required before those writes are orchestrated. Phase 4D adds the server-side orchestration for validated fixture/parser data. Phase 4E invokes that orchestration from local parsed-fixture replay after parser persistence succeeds.
+Phase 4B defines how deterministic `Anomaly` objects from Phase 4A should be written to Supabase. Phase 4C implements the schema readiness and pure row builders required before those writes are orchestrated. Phase 4D adds the server-side orchestration for validated fixture/parser data. Phase 4E invokes that orchestration from local parsed-fixture replay after parser persistence succeeds. Phase 4F documents how future dashboard/API reads should access persisted anomalies and evidence links.
 
 Current work does not add API routes, webhook workers, LLM calls, Terraform execution, Checkov execution, artifact download, dashboard wiring, or cloud commands.
 
@@ -211,6 +211,19 @@ The dashboard should read persisted anomalies through normal RLS-protected queri
 
 Do not add a `security definer` anomaly persistence function in an exposed schema. If a future RPC is needed for transactionality, prefer a carefully reviewed `security invoker` function or a server-side direct Postgres transaction.
 
+## Dashboard/API Read Planning
+
+Phase 4F adds `docs/ANOMALY_DASHBOARD_API_PLAN.md` for the future read side.
+
+The planned dashboard/API read path should:
+
+- Use authenticated user context for normal reads.
+- Query `anomalies` and `evidence_links` with explicit `organization_id` and run/project scope filters.
+- Resolve evidence sources only through allowlisted table-specific queries.
+- Avoid service-role credentials in browser code and normal dashboard reads.
+- Add Realtime subscriptions only when dashboard data wiring is implemented.
+- Keep raw Terraform JSON, full Checkov payloads, logs, secrets, and LLM raw output out of the default anomaly detail contract.
+
 ## Transaction And Consistency Plan
 
 The ideal future implementation writes anomaly rows and evidence links in one transaction.
@@ -271,6 +284,7 @@ Phase 4D has added:
 Before route, webhook, or dashboard integration, ADIA still needs:
 
 - API or worker wiring that intentionally calls anomaly persistence after parser persistence.
+- Dashboard/API wiring that reads persisted anomalies through the Phase 4F RLS-safe read model.
 - Evidence ownership tests against a real Supabase test database.
 - Docs updates stating which runtime flows persist anomalies automatically.
 

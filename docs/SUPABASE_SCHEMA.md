@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Phase 1 gives ADIA a secure database foundation for deployment visibility. Phase 2B extends it with raw evidence-file metadata for fixture ingestion, Phase 2E reuses that path for verified GitHub webhook persistence, Phase 3D adds parser idempotency fields, and Phase 4C adds anomaly idempotency fields for future writes. The schema stores organizations, projects, deployment runs, raw evidence metadata, Terraform evidence, IaC scan findings, deterministic anomaly records, insight records, recommendations, and evidence links.
+Phase 1 gives ADIA a secure database foundation for deployment visibility. Phase 2B extends it with raw evidence-file metadata for fixture ingestion, Phase 2E reuses that path for verified GitHub webhook persistence, Phase 3D adds parser idempotency fields, Phase 4C adds anomaly idempotency fields for future writes, and Phase 4F documents future authenticated anomaly/evidence reads without changing the schema. The schema stores organizations, projects, deployment runs, raw evidence metadata, Terraform evidence, IaC scan findings, deterministic anomaly records, insight records, recommendations, and evidence links.
 
 These phases do not wire Supabase into the browser application. They also do not add parser execution from routes, deterministic analyzer execution from webhooks, LLM generation, live dashboard queries, Edge Functions, artifact download, or Terraform apply behavior.
 
@@ -70,10 +70,11 @@ The future parser persistence layer should write:
 
 The Phase 3D migration adds replay-safe fields and indexes: source raw evidence references, parser versions, deterministic fingerprints, an `evidence_refs` column for `iac_scan_findings`, source-evidence consistency triggers, and duplicate-prevention indexes for parser rows and evidence links.
 
-Phase 3E adds a server-side package function that can upsert parser output for validated fixture data. Phase 3F adds a local CLI caller for fixture replay. Phase 4A generates anomalies in memory from validated parser data. Phase 4B documents anomaly persistence, including replay-safe anomaly fingerprints and evidence links from source records to anomalies. Phase 4C adds `anomaly_engine_version`, `fingerprint`, `evidence_refs`, and `metadata` columns to `anomalies`, plus constraints and indexes for idempotent writes. Phase 4D adds a trusted package-level writer that can persist anomalies and supporting evidence links from already-persisted fixture/parser rows. Phase 4E calls that writer from local parsed-fixture replay. No route or webhook invokes parser persistence or anomaly persistence automatically yet.
+Phase 3E adds a server-side package function that can upsert parser output for validated fixture data. Phase 3F adds a local CLI caller for fixture replay. Phase 4A generates anomalies in memory from validated parser data. Phase 4B documents anomaly persistence, including replay-safe anomaly fingerprints and evidence links from source records to anomalies. Phase 4C adds `anomaly_engine_version`, `fingerprint`, `evidence_refs`, and `metadata` columns to `anomalies`, plus constraints and indexes for idempotent writes. Phase 4D adds a trusted package-level writer that can persist anomalies and supporting evidence links from already-persisted fixture/parser rows. Phase 4E calls that writer from local parsed-fixture replay. Phase 4F documents future dashboard/API reads over `anomalies` and `evidence_links` through authenticated RLS-protected Supabase queries. No route or webhook invokes parser persistence or anomaly persistence automatically yet.
 
 See `docs/PARSER_PERSISTENCE.md` for the detailed future design.
 See `docs/ANOMALY_PERSISTENCE.md` for anomaly persistence orchestration and remaining integration work.
+See `docs/ANOMALY_DASHBOARD_API_PLAN.md` for future anomaly dashboard/API read planning.
 
 ## Consistency Guards
 

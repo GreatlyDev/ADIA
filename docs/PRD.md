@@ -58,7 +58,7 @@ Planned entities:
 - `recommendations` - evidence-linked follow-up actions.
 - `evidence_links` - references to logs, plan paths, scan findings, commits, or run IDs.
 
-The base schema was implemented in Phase 1. Current ingestion work writes deployment runs and raw evidence metadata. Phase 3A can summarize Terraform plan fixture JSON in memory, and Phase 3B can normalize Checkov fixture JSON in memory. Phase 3C documents parser persistence, Phase 3D adds schema readiness plus row builders, Phase 3E adds fixture-only parser persistence orchestration, Phase 3F adds a local parsed-fixture replay CLI, Phase 4A can generate deterministic anomalies in memory from validated fixture/parser data, Phase 4B documents future anomaly persistence, Phase 4C adds anomaly persistence schema readiness plus pure row builders, Phase 4D adds server-only anomaly persistence orchestration for already-persisted fixture/parser rows, and Phase 4E wires anomaly persistence into local parsed-fixture replay. API/worker wiring, insight, and recommendation writes remain planned for future phases.
+The base schema was implemented in Phase 1. Current ingestion work writes deployment runs and raw evidence metadata. Phase 3A can summarize Terraform plan fixture JSON in memory, and Phase 3B can normalize Checkov fixture JSON in memory. Phase 3C documents parser persistence, Phase 3D adds schema readiness plus row builders, Phase 3E adds fixture-only parser persistence orchestration, Phase 3F adds a local parsed-fixture replay CLI, Phase 4A can generate deterministic anomalies in memory from validated fixture/parser data, Phase 4B documents future anomaly persistence, Phase 4C adds anomaly persistence schema readiness plus pure row builders, Phase 4D adds server-only anomaly persistence orchestration for already-persisted fixture/parser rows, Phase 4E wires anomaly persistence into local parsed-fixture replay, and Phase 4F documents future RLS-safe anomaly dashboard/API reads. API/worker wiring, insight, and recommendation writes remain planned for future phases.
 
 ## API Roadmap
 
@@ -73,7 +73,7 @@ Planned API surface:
 - `POST /api/insights/run/:id` for server-side LLM insight generation.
 - `GET /api/projects/:id/runs` for dashboard data.
 
-Current work implements the signed GitHub workflow-run webhook route plus package-level Terraform, Checkov, and anomaly analyzers for trusted development use only. Phase 3F adds local parsed-fixture replay. Phase 4D adds package-level anomaly persistence orchestration for trusted server-side fixture/parser data. Phase 4E calls anomaly persistence from local parsed-fixture replay only. The parsers and anomaly engine are not exposed as API routes yet. The other API routes remain roadmap items.
+Current work implements the signed GitHub workflow-run webhook route plus package-level Terraform, Checkov, and anomaly analyzers for trusted development use only. Phase 3F adds local parsed-fixture replay. Phase 4D adds package-level anomaly persistence orchestration for trusted server-side fixture/parser data. Phase 4E calls anomaly persistence from local parsed-fixture replay only. Phase 4F documents future anomaly read contracts and RLS-safe query boundaries. The parsers and anomaly engine are not exposed as API routes yet. The anomaly dashboard/API read path is not implemented yet. The other API routes remain roadmap items.
 
 ## Dashboard Roadmap
 
@@ -90,6 +90,8 @@ Planned dashboard surfaces:
 - Realtime run updates via Supabase Realtime.
 
 The dashboard currently remains a static placeholder UI.
+
+Phase 4F documents the future anomaly feed, run panel, detail drawer, evidence drill-down, filters, Realtime behavior, and tests in `docs/ANOMALY_DASHBOARD_API_PLAN.md`.
 
 ## AI Safety Principles
 
@@ -118,6 +120,7 @@ The dashboard currently remains a static placeholder UI.
 - Phase 4C: Anomaly persistence schema readiness and pure row builders.
 - Phase 4D: Server-only anomaly persistence orchestration for validated fixture/parser data.
 - Phase 4E: Local parsed-fixture anomaly replay.
+- Phase 4F: Anomaly dashboard/API read-model planning.
 - Phase 5: LLM insight service.
 - Phase 6: Realtime dashboard integration.
 - Phase 7: E2E tests, deployment, and portfolio polish.
