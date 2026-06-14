@@ -6,7 +6,7 @@ ADIA is an AI-assisted DevOps visibility dashboard for understanding deployment 
 
 ## Current Status
 
-Phase 0 and Phase 1 are complete. Phase 2 fixture and GitHub webhook ingestion slices are in place. Phase 3A adds deterministic Terraform plan parsing for sanitized fixture JSON only. Phase 3B adds deterministic Checkov fixture parsing. Phase 3C documents parser persistence, Phase 3D adds schema readiness plus row builders, Phase 3E adds server-only parser persistence orchestration, and Phase 3F adds a local fixture replay CLI.
+Phase 0 and Phase 1 are complete. Phase 2 fixture and GitHub webhook ingestion slices are in place. Phase 3A adds deterministic Terraform plan parsing for sanitized fixture JSON only. Phase 3B adds deterministic Checkov fixture parsing. Phase 3C documents parser persistence, Phase 3D adds schema readiness plus row builders, Phase 3E adds server-only parser persistence orchestration, Phase 3F adds a local fixture replay CLI, and Phase 4A adds an in-memory deterministic anomaly engine for validated fixture/parser data.
 
 This repository currently contains:
 
@@ -16,7 +16,7 @@ This repository currently contains:
 - Server-side Supabase fixture ingestion in `packages/ingestion`.
 - A pure GitHub Actions workflow-run event adapter for producing ADIA ingestion envelopes.
 - A server-side GitHub `workflow_run` webhook route that verifies signatures, supports dry-run envelope mapping, and persists non-dry-run envelope metadata to Supabase.
-- Deterministic Terraform plan and Checkov parsers in `packages/analyzers`, plus stubs for later anomaly and redaction work.
+- Deterministic Terraform plan, Checkov, and anomaly analyzers in `packages/analyzers`, plus a stub for later redaction work.
 - Server-only parser persistence row builders and fixture-output orchestration in `packages/ingestion`.
 - Vitest tests for analyzer parsing, property-based parser invariants, and ingestion contract validation.
 - Supabase schema migrations and seed data for the Phase 1 data model, Phase 2B/2E raw evidence metadata, and Phase 3D parser idempotency fields.
@@ -26,7 +26,7 @@ This repository currently contains:
 - Documentation for product scope, architecture, parser persistence planning, decisions, and learning notes.
 - Safe starter GitHub Actions workflows for CI and Terraform validation.
 
-Current work intentionally does not include parser API route wiring, automatic webhook parser execution, LLM calls, artifact download, Checkov/Terraform execution, or autonomous remediation. Terraform and Checkov parsing are currently package-level analysis over already-loaded fixture JSON only, and parser persistence is limited to validated local fixture replay or trusted server-side callers.
+Current work intentionally does not include anomaly persistence, parser/anomaly API route wiring, automatic webhook parser execution, LLM calls, artifact download, Checkov/Terraform execution, or autonomous remediation. Terraform, Checkov, and anomaly analysis are currently package-level analysis over already-loaded fixture/parser data only, and parser persistence is limited to validated local fixture replay or trusted server-side callers.
 
 ## How ADIA Is Different
 
@@ -66,7 +66,7 @@ Planned MVP capabilities:
 apps/web                 Next.js App Router + Tailwind starter dashboard
 packages/core            Shared ADIA TypeScript types and ingestion contracts
 packages/ingestion       Server-only Supabase fixture ingestion and parser persistence helpers
-packages/analyzers       Deterministic Terraform and Checkov parsers plus future analyzer stubs
+packages/analyzers       Deterministic Terraform, Checkov, and anomaly analyzers plus redaction stub
 supabase                 Schema migrations, placeholders, and seed data
 infra                    Safe Terraform placeholders for future modules/envs
 scripts/fixtures         Sanitized demo ingestion and evidence fixtures
@@ -150,15 +150,15 @@ pnpm exec tsx scripts/ingest-demo.ts
 
 The demo validates one deployment-run fixture and checks that referenced evidence files exist. It does not write to Supabase. See `docs/INGESTION_FIXTURES.md` for details.
 
-Run the analyzer parser tests:
+Run the analyzer parser and anomaly tests:
 
 ```bash
 pnpm --filter @adia/analyzers test
 ```
 
-The parsers read already-loaded Terraform `show -json` and Checkov JSON values and return deterministic summaries/findings for fixture development. They do not execute Terraform, execute Checkov, read credentials, write to Supabase, or call LLMs.
+The analyzers read already-loaded Terraform `show -json`, Checkov JSON, and ADIA parser output values, then return deterministic summaries/findings/anomalies for fixture development. They do not execute Terraform, execute Checkov, read credentials, write to Supabase, or call LLMs.
 
-Phase 3E adds a server-only package function that can persist already-parsed fixture outputs to Supabase when a trusted caller passes existing raw evidence paths. It is not wired to an API route, webhook, or CLI yet.
+Phase 3E adds a server-only package function that can persist already-parsed fixture outputs to Supabase when a trusted caller passes existing raw evidence paths. Phase 3F wires that path to local fixture replay only; it is still not wired to an API route or webhook.
 
 Run the Phase 2B Supabase-backed fixture ingestion help command:
 
@@ -223,7 +223,7 @@ Browser verification was also performed against the built Next.js app. The landi
 2. Phase 1 - Supabase schema, Auth model, organizations, projects, RLS, and seed data.
 3. Phase 2 - Deployment run ingestion from GitHub Actions and fixture-based local ingestion.
 4. Phase 3 - Terraform plan parser and Checkov parser with deterministic risk summaries. Phase 3A covers fixture-only Terraform plan parsing, Phase 3B covers fixture-only Checkov parsing, Phase 3C covers parser persistence planning, Phase 3D covers schema readiness plus row builders, Phase 3E covers fixture-only parser persistence orchestration, and Phase 3F covers local parsed-fixture replay.
-5. Phase 4 - Anomaly engine and evidence model.
+5. Phase 4 - Anomaly engine and evidence model. Phase 4A covers fixture/parser-data anomaly generation in memory only.
 6. Phase 5 - Server-side LLM structured insight generation.
 7. Phase 6 - Realtime dashboard backed by Supabase.
 8. Phase 7 - Optional Playwright E2E coverage, portfolio polish, and deployment hardening.

@@ -58,7 +58,7 @@ Planned entities:
 - `recommendations` - evidence-linked follow-up actions.
 - `evidence_links` - references to logs, plan paths, scan findings, commits, or run IDs.
 
-The base schema was implemented in Phase 1. Current ingestion work writes deployment runs and raw evidence metadata. Phase 3A can summarize Terraform plan fixture JSON in memory, and Phase 3B can normalize Checkov fixture JSON in memory. Phase 3C documents parser persistence, Phase 3D adds schema readiness plus row builders, Phase 3E adds fixture-only parser persistence orchestration, and Phase 3F adds a local parsed-fixture replay CLI. API/worker wiring, anomaly, insight, and recommendation writes remain planned for future phases.
+The base schema was implemented in Phase 1. Current ingestion work writes deployment runs and raw evidence metadata. Phase 3A can summarize Terraform plan fixture JSON in memory, and Phase 3B can normalize Checkov fixture JSON in memory. Phase 3C documents parser persistence, Phase 3D adds schema readiness plus row builders, Phase 3E adds fixture-only parser persistence orchestration, Phase 3F adds a local parsed-fixture replay CLI, and Phase 4A can generate deterministic anomalies in memory from validated fixture/parser data. API/worker wiring, anomaly persistence, insight, and recommendation writes remain planned for future phases.
 
 ## API Roadmap
 
@@ -73,7 +73,7 @@ Planned API surface:
 - `POST /api/insights/run/:id` for server-side LLM insight generation.
 - `GET /api/projects/:id/runs` for dashboard data.
 
-Current work implements the signed GitHub workflow-run webhook route plus package-level Terraform and Checkov fixture parsers. Phase 3F adds local parsed-fixture replay for trusted development use only. The parsers are not exposed as API routes yet. The other API routes remain roadmap items.
+Current work implements the signed GitHub workflow-run webhook route plus package-level Terraform, Checkov, and anomaly analyzers for trusted development use only. Phase 3F adds local parsed-fixture replay. The parsers and anomaly engine are not exposed as API routes yet. The other API routes remain roadmap items.
 
 ## Dashboard Roadmap
 
@@ -113,7 +113,7 @@ The dashboard currently remains a static placeholder UI.
 - Phase 3D: Parser persistence schema readiness and row builders.
 - Phase 3E: Fixture-only parser persistence orchestration.
 - Phase 3F: Local parsed-fixture replay CLI.
-- Phase 4: Deterministic anomaly engine.
+- Phase 4A: Deterministic anomaly engine over validated fixture/parser data.
 - Phase 5: LLM insight service.
 - Phase 6: Realtime dashboard integration.
 - Phase 7: E2E tests, deployment, and portfolio polish.

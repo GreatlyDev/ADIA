@@ -64,7 +64,7 @@ The deterministic pipeline will run before any LLM step:
 4. Detect anomalies in status, duration, failure pattern, resource blast radius, and exposure changes.
 5. Produce structured evidence records for dashboard and LLM use.
 
-Phase 3A implements the Terraform parsing step for local fixture data only. Phase 3B implements the IaC scanner parsing step for local fixture data only. Phase 3C defines the persistence boundary for parser output. Phase 3D adds schema readiness and row builders. Phase 3E adds package-level persistence orchestration for validated fixture parser output. Phase 3F adds a local CLI that invokes that orchestration for fixture replay, but does not wire it to routes or webhooks. The remaining analysis steps are still planned.
+Phase 3A implements the Terraform parsing step for local fixture data only. Phase 3B implements the IaC scanner parsing step for local fixture data only. Phase 3C defines the persistence boundary for parser output. Phase 3D adds schema readiness and row builders. Phase 3E adds package-level persistence orchestration for validated fixture parser output. Phase 3F adds a local CLI that invokes that orchestration for fixture replay, but does not wire it to routes or webhooks. Phase 4A adds deterministic anomaly generation over validated deployment run, Terraform, and Checkov parser data in memory only. Anomaly persistence and runtime wiring remain planned.
 
 ## Parser Persistence Plan
 

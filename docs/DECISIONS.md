@@ -113,3 +113,10 @@ This file records important technical and product decisions for ADIA. New decisi
 - Context: ADIA needs a safe way to demo parser persistence against local fixtures before accepting parser writes through routes, webhooks, or workers.
 - Decision: Phase 3F adds a local server-side replay CLI that validates an existing envelope, reads local Terraform and Checkov JSON fixtures, runs deterministic parsers, and persists output through Phase 3E orchestration.
 - Consequences: Portfolio demos can exercise the parser persistence path end to end without cloud execution or LLM calls. Production-style API or worker wiring remains future work.
+
+## ADR-017: Generate Anomalies Deterministically Before Persistence
+
+- Status: Accepted
+- Context: ADIA needs repeatable anomaly signals before LLM insight generation, dashboard wiring, or database persistence depends on them.
+- Decision: Phase 4A adds a pure TypeScript anomaly engine that accepts validated deployment run, Terraform parser, and Checkov parser data and returns in-memory `Anomaly` objects with evidence references.
+- Consequences: Anomaly logic can be tested and refined without API routes, Supabase writes, LLM calls, or infrastructure execution. Persisting anomalies and linking them to dashboard/API flows remain future phases.
