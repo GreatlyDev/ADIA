@@ -70,9 +70,10 @@ The future parser persistence layer should write:
 
 The Phase 3D migration adds replay-safe fields and indexes: source raw evidence references, parser versions, deterministic fingerprints, an `evidence_refs` column for `iac_scan_findings`, source-evidence consistency triggers, and duplicate-prevention indexes for parser rows and evidence links.
 
-Phase 3E adds a server-side package function that can upsert parser output for validated fixture data. Phase 3F adds a local CLI caller for fixture replay. Phase 4A generates anomalies in memory only and does not write `anomalies` rows yet. No route or webhook invokes parser persistence or anomaly persistence automatically yet.
+Phase 3E adds a server-side package function that can upsert parser output for validated fixture data. Phase 3F adds a local CLI caller for fixture replay. Phase 4A generates anomalies in memory only and does not write `anomalies` rows yet. Phase 4B documents future anomaly persistence, including replay-safe anomaly fingerprints and evidence links from source records to anomalies. No route or webhook invokes parser persistence or anomaly persistence automatically yet.
 
 See `docs/PARSER_PERSISTENCE.md` for the detailed future design.
+See `docs/ANOMALY_PERSISTENCE.md` for anomaly persistence planning.
 
 ## Consistency Guards
 

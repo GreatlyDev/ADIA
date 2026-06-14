@@ -120,3 +120,10 @@ This file records important technical and product decisions for ADIA. New decisi
 - Context: ADIA needs repeatable anomaly signals before LLM insight generation, dashboard wiring, or database persistence depends on them.
 - Decision: Phase 4A adds a pure TypeScript anomaly engine that accepts validated deployment run, Terraform parser, and Checkov parser data and returns in-memory `Anomaly` objects with evidence references.
 - Consequences: Anomaly logic can be tested and refined without API routes, Supabase writes, LLM calls, or infrastructure execution. Persisting anomalies and linking them to dashboard/API flows remain future phases.
+
+## ADR-018: Plan Anomaly Persistence Before Writing Anomalies
+
+- Status: Accepted
+- Context: ADIA now has deterministic anomaly objects, but persistence needs replay safety, evidence-link mapping, and RLS-safe server boundaries before writes are added.
+- Decision: Phase 4B documents anomaly persistence before implementation. Future writes should add deterministic fingerprints, evidence ref storage, duplicate-safe upserts, evidence links, explicit scope checks, and server-only callers.
+- Consequences: Anomalies remain in memory for now. A future phase can implement persistence with fewer surprises around tenant safety, duplicate rows, and evidence traceability.

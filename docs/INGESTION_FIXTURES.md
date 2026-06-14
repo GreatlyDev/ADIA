@@ -19,6 +19,7 @@ Phase 2 supports fixture-first ingestion. Phase 3A adds fixture-first Terraform 
 - Server-side parser persistence orchestration for already-parsed fixture output.
 - Local parsed-fixture replay CLI for validating, parsing, and persisting fixture evidence.
 - Deterministic in-memory anomaly generation from validated deployment run, Terraform parser, and Checkov parser data.
+- Anomaly persistence planning for a future write phase.
 - No API route or webhook wiring for Terraform or Checkov parser persistence yet.
 - No anomaly persistence yet.
 - No LLM calls.
