@@ -1,10 +1,10 @@
-# Anomaly Persistence Plan
+# Anomaly Persistence Readiness
 
 ## Scope
 
-Phase 4B defines how deterministic `Anomaly` objects from Phase 4A should be written to Supabase in a future implementation phase.
+Phase 4B defines how deterministic `Anomaly` objects from Phase 4A should be written to Supabase in a future implementation phase. Phase 4C implements the schema readiness and pure row builders required before those writes are orchestrated.
 
-Current work is planning only. It does not add migrations, row builders, Supabase writes, API routes, webhook workers, LLM calls, Terraform execution, Checkov execution, artifact download, or cloud commands.
+Current work does not add Supabase write orchestration, API routes, webhook workers, LLM calls, Terraform execution, Checkov execution, artifact download, or cloud commands.
 
 ## Current Inputs
 
@@ -38,7 +38,7 @@ The Phase 3D migration already makes `evidence_links` duplicate-safe with a uniq
 organization_id, source_table, source_id, target_table, target_id, label
 ```
 
-Future anomaly persistence should add a migration before writes are implemented:
+Phase 4C adds the anomaly migration before writes are implemented:
 
 ```sql
 alter table public.anomalies
@@ -48,7 +48,7 @@ add column if not exists evidence_refs text[] not null default '{}'::text[],
 add column if not exists metadata jsonb not null default '{}'::jsonb;
 ```
 
-Recommended constraints and indexes:
+Implemented constraints and indexes:
 
 ```sql
 alter table public.anomalies
@@ -59,17 +59,39 @@ alter table public.anomalies
 add constraint anomalies_fingerprint_format
 check (fingerprint is null or fingerprint ~ '^[a-f0-9]{64}$');
 
+alter table public.anomalies
+add constraint anomalies_evidence_refs_no_nulls
+check (array_position(evidence_refs, null) is null);
+
+alter table public.anomalies
+add constraint anomalies_metadata_is_object
+check (jsonb_typeof(metadata) = 'object');
+
 create unique index anomalies_run_engine_fingerprint_unique_idx
-on public.anomalies (deployment_run_id, anomaly_engine_version, fingerprint);
+on public.anomalies (deployment_run_id, anomaly_engine_version, fingerprint)
+where fingerprint is not null;
 
 create index anomalies_run_category_idx
-on public.anomalies (deployment_run_id, category);
+on public.anomalies (deployment_run_id, category)
+where category is not null;
 
 create index anomalies_run_severity_idx
 on public.anomalies (deployment_run_id, severity);
 ```
 
 If future work creates new public tables or changes role exposure, the migration should include explicit `GRANT` statements alongside RLS policy changes. Supabase now treats table grants and RLS as separate access layers for Data API visibility.
+
+Phase 4C does not create new public tables. It alters the existing `anomalies` table and keeps the existing RLS policies and organization/run guards.
+
+## Row Builder Readiness
+
+Phase 4C adds pure server-side row builders in `packages/ingestion`:
+
+- `parseAnomalyEvidenceRef`
+- `buildAnomalyWriteRows`
+- `buildAnomalyEvidenceLinkRows`
+
+These builders validate organization/run scope, parse allowlisted evidence refs, sort and dedupe evidence refs, generate stable fingerprints, and build compact metadata. They do not create a Supabase client and do not call `.upsert()`.
 
 ## Future Server Boundary
 
@@ -148,7 +170,7 @@ Evidence-link metadata should stay compact. It should not store raw Terraform pl
 
 ## Idempotency Plan
 
-Anomaly persistence must be replay-safe. Re-running the same deterministic anomaly engine for the same deployment run should update the same anomaly rows and not duplicate evidence links.
+Anomaly persistence must be replay-safe. Re-running the same deterministic anomaly engine for the same deployment run should update the same anomaly rows and not duplicate evidence links. Phase 4C adds the conflict key fields and row-builder fingerprints, but does not run the upserts yet.
 
 Recommended anomaly fingerprint:
 
@@ -211,29 +233,34 @@ Future application code should still validate these relationships before writes 
 
 ## Test Plan
 
-Future anomaly persistence should be test-driven and include:
+Phase 4C tests now cover:
 
 - Unit tests for `evidenceRefs` parsing, including invalid table names, invalid IDs, missing separators, duplicate refs, and unsupported tables.
 - Unit tests for anomaly row builders that verify snake_case columns, deterministic fingerprints, metadata shape, `evidence_refs`, and scope validation.
 - Unit tests for evidence link row builders that map each supported evidence table to `anomalies` with label `supports_anomaly`.
+- Tenant safety tests that reject mismatched anomaly organization/run IDs.
+- Property-oriented tests that generate anomaly evidence refs with duplicate and shuffled evidence refs, then assert stable fingerprints and duplicate-free normalized evidence refs.
+
+Future orchestration tests should add:
+
 - Idempotency tests that persist the same anomalies twice and verify stable anomaly rows plus duplicate-free evidence links.
 - Replay tests where anomaly wording changes but evidence refs stay the same, verifying an update instead of a duplicate.
 - Evidence-change tests where evidence refs change, verifying a new fingerprint.
-- Tenant safety tests that reject mismatched anomaly organization/run IDs.
 - Evidence ownership tests that reject evidence refs from another organization or another run.
 - Failure tests for missing deployment run, missing evidence source, anomaly upsert failure, and evidence-link upsert failure.
 - Static safety tests or review checks confirming the persistence module does not call LLMs, execute Terraform, execute Checkov, spawn shell commands, read cloud credentials, or expose service-role keys to browser code.
 
-Property-based tests can generate anomaly arrays with duplicate and shuffled evidence refs, then assert stable fingerprints and duplicate-free evidence links.
-
 ## Implementation Readiness Checklist
 
-Before implementing anomaly persistence, ADIA should add:
+Phase 4C has added:
 
 - A migration for `anomaly_engine_version`, `fingerprint`, `evidence_refs`, metadata, constraints, and indexes.
 - Row builders in server-only package code.
+
+Before implementing anomaly persistence writes, ADIA still needs:
+
 - A persistence orchestration function similar to parser persistence.
-- Tests for mapping, idempotency, tenant safety, evidence ownership, and failure cases.
+- Tests for database idempotency, tenant safety, evidence ownership, and failure cases.
 - Docs updates stating that anomalies are now persisted.
 
-Until then, Phase 4A anomalies remain in memory only.
+Until then, Phase 4A anomalies remain in memory unless a caller explicitly uses the Phase 4C builders to prepare rows. No ADIA code writes those rows yet.

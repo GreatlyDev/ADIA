@@ -64,7 +64,7 @@ The deterministic pipeline will run before any LLM step:
 4. Detect anomalies in status, duration, failure pattern, resource blast radius, and exposure changes.
 5. Produce structured evidence records for dashboard and LLM use.
 
-Phase 3A implements the Terraform parsing step for local fixture data only. Phase 3B implements the IaC scanner parsing step for local fixture data only. Phase 3C defines the persistence boundary for parser output. Phase 3D adds schema readiness and row builders. Phase 3E adds package-level persistence orchestration for validated fixture parser output. Phase 3F adds a local CLI that invokes that orchestration for fixture replay, but does not wire it to routes or webhooks. Phase 4A adds deterministic anomaly generation over validated deployment run, Terraform, and Checkov parser data in memory only. Phase 4B documents how those anomalies should later be persisted. Anomaly persistence implementation and runtime wiring remain planned.
+Phase 3A implements the Terraform parsing step for local fixture data only. Phase 3B implements the IaC scanner parsing step for local fixture data only. Phase 3C defines the persistence boundary for parser output. Phase 3D adds schema readiness and row builders. Phase 3E adds package-level persistence orchestration for validated fixture parser output. Phase 3F adds a local CLI that invokes that orchestration for fixture replay, but does not wire it to routes or webhooks. Phase 4A adds deterministic anomaly generation over validated deployment run, Terraform, and Checkov parser data in memory only. Phase 4B documents how those anomalies should later be persisted. Phase 4C adds anomaly schema readiness and pure row builders. Anomaly persistence write orchestration and runtime wiring remain planned.
 
 ## Anomaly Persistence Plan
 
@@ -83,7 +83,7 @@ server-only persistence boundary
 anomalies + evidence_links
 ```
 
-The future writer should verify organization/run scope, upsert anomalies by deterministic fingerprint, and translate `evidenceRefs` into `evidence_links` rows from source evidence records to anomaly records. See `docs/ANOMALY_PERSISTENCE.md` for the detailed planning notes.
+Phase 4C prepares this path by adding replay-safe anomaly columns, constraints, indexes, and pure row builders that map `Anomaly` objects plus persisted anomaly IDs into `anomalies` and `evidence_links` write rows. The future writer should verify organization/run scope, resolve evidence sources, upsert anomalies by deterministic fingerprint, and translate `evidenceRefs` into `evidence_links` rows from source evidence records to anomaly records. See `docs/ANOMALY_PERSISTENCE.md` for the detailed planning notes.
 
 ## Parser Persistence Plan
 
@@ -131,7 +131,7 @@ Supabase will provide:
 - Realtime subscriptions.
 - Edge functions only if they fit future ingestion or processing needs.
 
-Phase 1 defines schema and RLS. Phase 2B/2E write deployment runs and raw evidence metadata. Phase 3D prepares parser evidence tables for idempotent writes. Phase 3E can upsert parser outputs from trusted server-side fixture callers. Phase 3F provides a local replay CLI for those fixture writes. Phase 4B defines the future anomaly persistence boundary, but dashboard and webhook flows still do not invoke parser or anomaly persistence automatically.
+Phase 1 defines schema and RLS. Phase 2B/2E write deployment runs and raw evidence metadata. Phase 3D prepares parser evidence tables for idempotent writes. Phase 3E can upsert parser outputs from trusted server-side fixture callers. Phase 3F provides a local replay CLI for those fixture writes. Phase 4B defines the future anomaly persistence boundary, and Phase 4C prepares anomaly fields and row builders, but dashboard and webhook flows still do not invoke parser or anomaly persistence automatically.
 
 ## Phase 1 Schema Foundation
 

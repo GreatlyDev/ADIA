@@ -127,3 +127,10 @@ This file records important technical and product decisions for ADIA. New decisi
 - Context: ADIA now has deterministic anomaly objects, but persistence needs replay safety, evidence-link mapping, and RLS-safe server boundaries before writes are added.
 - Decision: Phase 4B documents anomaly persistence before implementation. Future writes should add deterministic fingerprints, evidence ref storage, duplicate-safe upserts, evidence links, explicit scope checks, and server-only callers.
 - Consequences: Anomalies remain in memory for now. A future phase can implement persistence with fewer surprises around tenant safety, duplicate rows, and evidence traceability.
+
+## ADR-019: Prepare Anomaly Persistence Schema Before Write Orchestration
+
+- Status: Accepted
+- Context: ADIA needs replay-safe anomaly writes, but database shape and mapping rules should be testable before adding Supabase upserts or route/worker execution.
+- Decision: Phase 4C adds anomaly engine version, fingerprint, evidence ref, and metadata schema readiness plus pure server-side row builders before implementing a persistence orchestration function.
+- Consequences: Future anomaly persistence can use deterministic conflict keys and evidence links without duplicating rows. ADIA still does not write anomalies to Supabase, expose anomaly routes, call LLMs, or execute infrastructure commands.

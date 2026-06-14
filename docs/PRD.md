@@ -58,7 +58,7 @@ Planned entities:
 - `recommendations` - evidence-linked follow-up actions.
 - `evidence_links` - references to logs, plan paths, scan findings, commits, or run IDs.
 
-The base schema was implemented in Phase 1. Current ingestion work writes deployment runs and raw evidence metadata. Phase 3A can summarize Terraform plan fixture JSON in memory, and Phase 3B can normalize Checkov fixture JSON in memory. Phase 3C documents parser persistence, Phase 3D adds schema readiness plus row builders, Phase 3E adds fixture-only parser persistence orchestration, Phase 3F adds a local parsed-fixture replay CLI, Phase 4A can generate deterministic anomalies in memory from validated fixture/parser data, and Phase 4B documents future anomaly persistence. API/worker wiring, anomaly persistence implementation, insight, and recommendation writes remain planned for future phases.
+The base schema was implemented in Phase 1. Current ingestion work writes deployment runs and raw evidence metadata. Phase 3A can summarize Terraform plan fixture JSON in memory, and Phase 3B can normalize Checkov fixture JSON in memory. Phase 3C documents parser persistence, Phase 3D adds schema readiness plus row builders, Phase 3E adds fixture-only parser persistence orchestration, Phase 3F adds a local parsed-fixture replay CLI, Phase 4A can generate deterministic anomalies in memory from validated fixture/parser data, Phase 4B documents future anomaly persistence, and Phase 4C adds anomaly persistence schema readiness plus pure row builders. API/worker wiring, anomaly persistence write orchestration, insight, and recommendation writes remain planned for future phases.
 
 ## API Roadmap
 
@@ -115,6 +115,7 @@ The dashboard currently remains a static placeholder UI.
 - Phase 3F: Local parsed-fixture replay CLI.
 - Phase 4A: Deterministic anomaly engine over validated fixture/parser data.
 - Phase 4B: Anomaly persistence planning.
+- Phase 4C: Anomaly persistence schema readiness and pure row builders.
 - Phase 5: LLM insight service.
 - Phase 6: Realtime dashboard integration.
 - Phase 7: E2E tests, deployment, and portfolio polish.
