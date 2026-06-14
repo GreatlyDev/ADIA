@@ -1,4 +1,5 @@
 export * from "./anomalyPersistence";
+export * from "./fixtureAnomalyPersistence";
 export * from "./fixtureParserPersistence";
 export * from "./fixtureReplay";
 export * from "./githubActionsAdapter";

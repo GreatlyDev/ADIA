@@ -70,10 +70,10 @@ The future parser persistence layer should write:
 
 The Phase 3D migration adds replay-safe fields and indexes: source raw evidence references, parser versions, deterministic fingerprints, an `evidence_refs` column for `iac_scan_findings`, source-evidence consistency triggers, and duplicate-prevention indexes for parser rows and evidence links.
 
-Phase 3E adds a server-side package function that can upsert parser output for validated fixture data. Phase 3F adds a local CLI caller for fixture replay. Phase 4A generates anomalies in memory only. Phase 4B documents future anomaly persistence, including replay-safe anomaly fingerprints and evidence links from source records to anomalies. Phase 4C adds `anomaly_engine_version`, `fingerprint`, `evidence_refs`, and `metadata` columns to `anomalies`, plus constraints and indexes for future idempotent writes. No route or webhook invokes parser persistence or anomaly persistence automatically yet, and no code writes anomalies to Supabase yet.
+Phase 3E adds a server-side package function that can upsert parser output for validated fixture data. Phase 3F adds a local CLI caller for fixture replay. Phase 4A generates anomalies in memory from validated parser data. Phase 4B documents anomaly persistence, including replay-safe anomaly fingerprints and evidence links from source records to anomalies. Phase 4C adds `anomaly_engine_version`, `fingerprint`, `evidence_refs`, and `metadata` columns to `anomalies`, plus constraints and indexes for idempotent writes. Phase 4D adds a trusted package-level writer that can persist anomalies and supporting evidence links from already-persisted fixture/parser rows. No route or webhook invokes parser persistence or anomaly persistence automatically yet.
 
 See `docs/PARSER_PERSISTENCE.md` for the detailed future design.
-See `docs/ANOMALY_PERSISTENCE.md` for anomaly persistence readiness and remaining orchestration work.
+See `docs/ANOMALY_PERSISTENCE.md` for anomaly persistence orchestration and remaining integration work.
 
 ## Consistency Guards
 

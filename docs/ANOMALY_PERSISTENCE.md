@@ -2,18 +2,18 @@
 
 ## Scope
 
-Phase 4B defines how deterministic `Anomaly` objects from Phase 4A should be written to Supabase in a future implementation phase. Phase 4C implements the schema readiness and pure row builders required before those writes are orchestrated.
+Phase 4B defines how deterministic `Anomaly` objects from Phase 4A should be written to Supabase. Phase 4C implements the schema readiness and pure row builders required before those writes are orchestrated. Phase 4D adds the server-side orchestration for validated fixture/parser data.
 
-Current work does not add Supabase write orchestration, API routes, webhook workers, LLM calls, Terraform execution, Checkov execution, artifact download, or cloud commands.
+Current work does not add API routes, webhook workers, LLM calls, Terraform execution, Checkov execution, artifact download, dashboard wiring, or cloud commands.
 
 ## Current Inputs
 
-The future anomaly persistence layer will start from data ADIA already has:
+The anomaly persistence layer starts from data ADIA already has:
 
 - One validated `deployment_runs` row.
 - Persisted Terraform parser output in `terraform_plans` and `terraform_resource_changes`.
 - Persisted Checkov parser output in `iac_scan_findings`.
-- In-memory `Anomaly[]` values from `packages/analyzers`.
+- Deterministic `Anomaly[]` values from `packages/analyzers`.
 
 Phase 4A anomalies include:
 
@@ -26,7 +26,7 @@ Phase 4A anomalies include:
 - `evidenceRefs`
 - `detectedAt`
 
-The analyzer remains persistence-free. It generates deterministic findings only. Future persistence belongs in server-only package code.
+The analyzer remains persistence-free. It generates deterministic findings only. Persistence belongs in server-only package code.
 
 ## Schema Readiness
 
@@ -93,33 +93,31 @@ Phase 4C adds pure server-side row builders in `packages/ingestion`:
 
 These builders validate organization/run scope, parse allowlisted evidence refs, sort and dedupe evidence refs, generate stable fingerprints, and build compact metadata. They do not create a Supabase client and do not call `.upsert()`.
 
-## Future Server Boundary
+## Server Boundary
 
 Anomaly persistence should live in `packages/ingestion` or another server-only package, not in `packages/analyzers` and not in browser code.
 
-Future API shape:
+Implemented package-level API shape:
 
 ```ts
-persistAnomaliesForRun(client, {
+persistFixtureAnomalies(client, {
   organizationId,
   deploymentRunId,
   anomalyEngineVersion: "anomaly-engine-v1",
-  anomalies,
 });
 ```
 
-The function should:
+The function:
 
 1. Resolve the `deployment_runs` row by `organizationId` and `deploymentRunId`.
-2. Validate every anomaly matches that organization and run.
-3. Parse each `evidenceRefs` value into `{ sourceTable, sourceId }`.
-4. Resolve every evidence source from Supabase.
-5. Verify every evidence source belongs to the same organization.
-6. For run-scoped source tables, verify the same deployment run when the table has `deployment_run_id`.
-7. Build anomaly write rows with deterministic fingerprints.
-8. Upsert anomalies.
-9. Upsert evidence links from source evidence records to anomaly rows.
-10. Return persisted anomaly IDs, fingerprints, and evidence-link counts.
+2. Read scoped persisted Terraform and Checkov parser rows.
+3. Map persisted rows into Phase 4A analyzer input.
+4. Run deterministic anomaly detection.
+5. Parse and verify each `evidenceRefs` value against resolved source rows.
+6. Build anomaly write rows with deterministic fingerprints.
+7. Upsert anomalies.
+8. Upsert evidence links from source evidence records to anomaly rows.
+9. Return persisted anomaly IDs, fingerprints, categories, severities, and evidence-link rows.
 
 Browser code must never call this function directly and must never receive service-role credentials.
 
@@ -134,7 +132,7 @@ terraform_resource_changes:<id>
 iac_scan_findings:<id>
 ```
 
-Future persistence should parse only this allowlisted format:
+Persistence parses only this allowlisted format:
 
 ```ts
 type ParsedAnomalyEvidenceRef = {
@@ -170,7 +168,7 @@ Evidence-link metadata should stay compact. It should not store raw Terraform pl
 
 ## Idempotency Plan
 
-Anomaly persistence must be replay-safe. Re-running the same deterministic anomaly engine for the same deployment run should update the same anomaly rows and not duplicate evidence links. Phase 4C adds the conflict key fields and row-builder fingerprints, but does not run the upserts yet.
+Anomaly persistence must be replay-safe. Re-running the same deterministic anomaly engine for the same deployment run should update the same anomaly rows and not duplicate evidence links. Phase 4C adds the conflict key fields and row-builder fingerprints. Phase 4D uses those conflict keys in trusted package-level upserts.
 
 Recommended anomaly fingerprint:
 
@@ -188,13 +186,13 @@ sha256(stable_json({
 
 Do not include `summary` or `detectedAt` in the fingerprint. That lets wording improve or timestamps normalize without creating a new logical anomaly.
 
-Future upsert conflict target:
+Upsert conflict target:
 
 ```text
 deployment_run_id, anomaly_engine_version, fingerprint
 ```
 
-Future replay behavior:
+Replay behavior:
 
 - Same anomaly and same evidence refs: update title, summary, severity, category, detected_at, metadata, and evidence_refs in place.
 - Same anomaly with changed wording: update the existing row.
@@ -204,7 +202,7 @@ Future replay behavior:
 
 ## RLS-Safe Access Model
 
-Future anomaly persistence can safely run in two modes:
+Anomaly persistence can safely run in two modes:
 
 - Trusted server job mode: use a service-role client only in server code, then explicitly verify organization, deployment run, anomaly, and evidence-source ownership before writes.
 - User-initiated admin mode: use an authenticated Supabase client for an owner or admin. Existing RLS policies allow owner/admin inserts and updates for `anomalies` and `evidence_links`.
@@ -229,7 +227,7 @@ Existing database guards already help:
 - `evidence_links_run_org_guard` checks link organization/run consistency.
 - `evidence_record_belongs_to_org` validates that linked source and target records exist in the same organization.
 
-Future application code should still validate these relationships before writes so errors are clear and testable before database triggers reject invalid rows.
+Application code still validates these relationships before writes so errors are clear and testable before database triggers reject invalid rows.
 
 ## Test Plan
 
@@ -250,6 +248,14 @@ Future orchestration tests should add:
 - Failure tests for missing deployment run, missing evidence source, anomaly upsert failure, and evidence-link upsert failure.
 - Static safety tests or review checks confirming the persistence module does not call LLMs, execute Terraform, execute Checkov, spawn shell commands, read cloud credentials, or expose service-role keys to browser code.
 
+Phase 4D now covers package-level orchestration tests for fixture/parser data:
+
+- Persist anomalies and evidence links from scoped persisted parser rows.
+- Replay the same parser state without duplicate anomaly or evidence-link rows.
+- Return no writes when no anomaly rules match.
+- Reject missing deployment runs before writes.
+- Reject multiple Terraform plan rows in fixture scope.
+
 ## Implementation Readiness Checklist
 
 Phase 4C has added:
@@ -257,10 +263,15 @@ Phase 4C has added:
 - A migration for `anomaly_engine_version`, `fingerprint`, `evidence_refs`, metadata, constraints, and indexes.
 - Row builders in server-only package code.
 
-Before implementing anomaly persistence writes, ADIA still needs:
+Phase 4D has added:
 
 - A persistence orchestration function similar to parser persistence.
-- Tests for database idempotency, tenant safety, evidence ownership, and failure cases.
-- Docs updates stating that anomalies are now persisted.
+- Tests for replay behavior, scoped reads, no-anomaly behavior, and failure cases.
 
-Until then, Phase 4A anomalies remain in memory unless a caller explicitly uses the Phase 4C builders to prepare rows. No ADIA code writes those rows yet.
+Before route, webhook, or dashboard integration, ADIA still needs:
+
+- API or worker wiring that intentionally calls anomaly persistence after parser persistence.
+- Evidence ownership tests against a real Supabase test database.
+- Docs updates stating which runtime flows persist anomalies automatically.
+
+Until then, anomaly persistence is available only to trusted server-side package callers.

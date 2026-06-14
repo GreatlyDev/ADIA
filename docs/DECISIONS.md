@@ -134,3 +134,10 @@ This file records important technical and product decisions for ADIA. New decisi
 - Context: ADIA needs replay-safe anomaly writes, but database shape and mapping rules should be testable before adding Supabase upserts or route/worker execution.
 - Decision: Phase 4C adds anomaly engine version, fingerprint, evidence ref, and metadata schema readiness plus pure server-side row builders before implementing a persistence orchestration function.
 - Consequences: Future anomaly persistence can use deterministic conflict keys and evidence links without duplicating rows. ADIA still does not write anomalies to Supabase, expose anomaly routes, call LLMs, or execute infrastructure commands.
+
+## ADR-020: Persist Anomalies From Scoped Parser Rows Before Runtime Wiring
+
+- Status: Accepted
+- Context: ADIA needs to prove anomaly persistence is replay-safe and evidence-grounded before webhooks, routes, dashboard flows, or LLM insights depend on it.
+- Decision: Phase 4D adds a trusted server-side package function that reads one scoped deployment run plus already-persisted parser rows, runs deterministic anomaly detection with persisted evidence IDs, verifies evidence refs, and upserts anomalies plus evidence links.
+- Consequences: Anomaly persistence can now be tested at the package level without exposing a runtime API. Automatic webhook processing, dashboard reads, LLM insight generation, and infrastructure execution remain separate future phases.
