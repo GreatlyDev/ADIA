@@ -2,7 +2,7 @@
 
 ## Scope
 
-Phase 4B defines how deterministic `Anomaly` objects from Phase 4A should be written to Supabase. Phase 4C implements the schema readiness and pure row builders required before those writes are orchestrated. Phase 4D adds the server-side orchestration for validated fixture/parser data.
+Phase 4B defines how deterministic `Anomaly` objects from Phase 4A should be written to Supabase. Phase 4C implements the schema readiness and pure row builders required before those writes are orchestrated. Phase 4D adds the server-side orchestration for validated fixture/parser data. Phase 4E invokes that orchestration from local parsed-fixture replay after parser persistence succeeds.
 
 Current work does not add API routes, webhook workers, LLM calls, Terraform execution, Checkov execution, artifact download, dashboard wiring, or cloud commands.
 
@@ -274,4 +274,4 @@ Before route, webhook, or dashboard integration, ADIA still needs:
 - Evidence ownership tests against a real Supabase test database.
 - Docs updates stating which runtime flows persist anomalies automatically.
 
-Until then, anomaly persistence is available only to trusted server-side package callers.
+Until then, anomaly persistence is available only to trusted server-side package callers and the local parsed-fixture replay path.

@@ -14,6 +14,10 @@ import {
   type ParserPersistenceSupabaseClient,
 } from "./fixtureParserPersistence";
 import {
+  persistFixtureAnomalies,
+  type AnomalyPersistenceSupabaseClient,
+} from "./fixtureAnomalyPersistence";
+import {
   ingestFixtureEnvelope,
   type EvidenceFileMetadata,
   type SupabaseIngestionClient,
@@ -34,11 +38,15 @@ export interface ReplayParsedFixtureResult {
   terraformPlanId?: string;
   terraformResourceChangeCount: number;
   checkovFindingCount: number;
+  anomalyCount: number;
+  parserEvidenceLinkCount: number;
+  anomalyEvidenceLinkCount: number;
   evidenceLinkCount: number;
 }
 
 export type FixtureReplayClient = SupabaseIngestionClient &
-  ParserPersistenceSupabaseClient;
+  ParserPersistenceSupabaseClient &
+  AnomalyPersistenceSupabaseClient;
 
 export class FixtureReplayError extends Error {
   constructor(
@@ -104,12 +112,22 @@ export const replayParsedFixture = async (
       summary: terraformSummary,
     },
   });
+  const anomalyPersistenceResult = await persistFixtureAnomalies(client, {
+    deploymentRunId,
+    organizationId,
+  });
+  const parserEvidenceLinkCount = parserPersistenceResult.evidenceLinks.length;
+  const anomalyEvidenceLinkCount =
+    anomalyPersistenceResult.evidenceLinks.length;
 
   return {
+    anomalyCount: anomalyPersistenceResult.anomalies.length,
+    anomalyEvidenceLinkCount,
     checkovFindingCount: parserPersistenceResult.iacScanFindings.length,
     deploymentRunId,
-    evidenceLinkCount: parserPersistenceResult.evidenceLinks.length,
+    evidenceLinkCount: parserEvidenceLinkCount + anomalyEvidenceLinkCount,
     organizationId,
+    parserEvidenceLinkCount,
     rawEvidenceFileCount: ingestionResult.rawEvidenceFiles.length,
     terraformPlanId: parserPersistenceResult.terraformPlan?.id,
     terraformResourceChangeCount:

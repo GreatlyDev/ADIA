@@ -141,3 +141,10 @@ This file records important technical and product decisions for ADIA. New decisi
 - Context: ADIA needs to prove anomaly persistence is replay-safe and evidence-grounded before webhooks, routes, dashboard flows, or LLM insights depend on it.
 - Decision: Phase 4D adds a trusted server-side package function that reads one scoped deployment run plus already-persisted parser rows, runs deterministic anomaly detection with persisted evidence IDs, verifies evidence refs, and upserts anomalies plus evidence links.
 - Consequences: Anomaly persistence can now be tested at the package level without exposing a runtime API. Automatic webhook processing, dashboard reads, LLM insight generation, and infrastructure execution remain separate future phases.
+
+## ADR-021: Add Anomaly Persistence To Local Fixture Replay Before Runtime Automation
+
+- Status: Accepted
+- Context: ADIA needs an end-to-end local demo path for parser and anomaly persistence before webhook workers, API routes, or dashboard flows call the pipeline automatically.
+- Decision: Phase 4E extends local parsed-fixture replay to call Phase 4D anomaly persistence after parser persistence succeeds and to report anomaly plus evidence-link counts.
+- Consequences: Portfolio demos can replay raw evidence, parser output, and anomalies through trusted server-side code. Production-style automation, LLM insight generation, and infrastructure execution remain out of scope.

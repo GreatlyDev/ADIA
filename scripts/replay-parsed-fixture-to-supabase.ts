@@ -25,7 +25,10 @@ const main = async (): Promise<void> => {
     `Terraform resource changes: ${result.terraformResourceChangeCount}`,
   );
   console.log(`Checkov findings: ${result.checkovFindingCount}`);
-  console.log(`Evidence links: ${result.evidenceLinkCount}`);
+  console.log(`Anomalies: ${result.anomalyCount}`);
+  console.log(`Parser evidence links: ${result.parserEvidenceLinkCount}`);
+  console.log(`Anomaly evidence links: ${result.anomalyEvidenceLinkCount}`);
+  console.log(`Total evidence links: ${result.evidenceLinkCount}`);
 };
 
 const printHelp = (): void => {
@@ -33,7 +36,8 @@ const printHelp = (): void => {
 
 Validates one ADIA fixture envelope, writes deployment_runs and
 raw_evidence_files metadata, reads local Terraform and Checkov JSON
-fixtures, runs deterministic parsers, and persists parser output to Supabase.
+fixtures, runs deterministic parsers, persists parser output to Supabase,
+and persists deterministic anomalies from the persisted parser rows.
 
 Arguments:
   fixture-path  Path relative to scripts/fixtures.

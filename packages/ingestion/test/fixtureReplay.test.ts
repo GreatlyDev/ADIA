@@ -108,10 +108,13 @@ describe("replayParsedFixture", () => {
     });
 
     expect(result).toEqual({
+      anomalyCount: 1,
+      anomalyEvidenceLinkCount: 1,
       checkovFindingCount: 1,
       deploymentRunId: "run-1",
-      evidenceLinkCount: 3,
+      evidenceLinkCount: 4,
       organizationId: "org-1",
+      parserEvidenceLinkCount: 3,
       rawEvidenceFileCount: 3,
       terraformPlanId: "terraform-plan-1",
       terraformResourceChangeCount: 1,
@@ -121,7 +124,34 @@ describe("replayParsedFixture", () => {
     expect(client.tables.terraform_plans).toHaveLength(1);
     expect(client.tables.terraform_resource_changes).toHaveLength(1);
     expect(client.tables.iac_scan_findings).toHaveLength(1);
-    expect(client.tables.evidence_links).toHaveLength(3);
+    expect(client.tables.anomalies).toHaveLength(1);
+    expect(client.tables.evidence_links).toHaveLength(4);
+  });
+
+  it("replays parsed fixture anomalies without duplicating rows", async () => {
+    const fixtureRoot = createFixtureRoot();
+    const client = createFakeSupabaseClient();
+    const options = {
+      fixturePath: "github-actions/deploy-staging.json",
+      fixtureRoot,
+    };
+
+    await replayParsedFixture(client, options);
+    const second = await replayParsedFixture(client, options);
+
+    expect(second).toMatchObject({
+      anomalyCount: 1,
+      anomalyEvidenceLinkCount: 1,
+      evidenceLinkCount: 4,
+      parserEvidenceLinkCount: 3,
+    });
+    expect(client.tables.deployment_runs).toHaveLength(1);
+    expect(client.tables.raw_evidence_files).toHaveLength(3);
+    expect(client.tables.terraform_plans).toHaveLength(1);
+    expect(client.tables.terraform_resource_changes).toHaveLength(1);
+    expect(client.tables.iac_scan_findings).toHaveLength(1);
+    expect(client.tables.anomalies).toHaveLength(1);
+    expect(client.tables.evidence_links).toHaveLength(4);
   });
 
   it("rejects unsafe fixture paths before reading files", async () => {
@@ -175,6 +205,7 @@ type FakeTableName =
   | "terraform_plans"
   | "terraform_resource_changes"
   | "iac_scan_findings"
+  | "anomalies"
   | "evidence_links";
 
 interface FakeRow {
@@ -186,6 +217,7 @@ const createFakeSupabaseClient = () => {
   const client = {
     nextIds: {
       deployment_runs: 1,
+      anomalies: 1,
       evidence_links: 1,
       iac_scan_findings: 1,
       raw_evidence_files: 1,
@@ -211,6 +243,7 @@ const createFakeSupabaseClient = () => {
       terraform_plans: [] as FakeRow[],
       terraform_resource_changes: [] as FakeRow[],
       iac_scan_findings: [] as FakeRow[],
+      anomalies: [] as FakeRow[],
       evidence_links: [] as FakeRow[],
     },
     from(table: FakeTableName) {
@@ -294,7 +327,7 @@ class FakeQueryBuilder {
         ? this.upsertRows(this.payload).map((row) =>
             this.projectRequiredRow(row),
           )
-        : [];
+        : this.filteredRows().map((row) => this.projectRequiredRow(row));
 
     return Promise.resolve({ data, error: null }).then(onfulfilled, onrejected);
   }
@@ -320,6 +353,14 @@ class FakeQueryBuilder {
 
       return storedRow;
     });
+  }
+
+  private filteredRows(): FakeRow[] {
+    return this.client.tables[this.table].filter((candidate) =>
+      Object.entries(this.filters).every(
+        ([key, value]) => candidate[key] === value,
+      ),
+    );
   }
 
   private findExistingRow(row: Record<string, unknown>): FakeRow | undefined {
@@ -354,6 +395,8 @@ class FakeQueryBuilder {
         return `terraform-resource-change-${nextId}`;
       case "iac_scan_findings":
         return `iac-scan-finding-${nextId}`;
+      case "anomalies":
+        return `anomaly-${nextId}`;
       case "evidence_links":
         return `evidence-link-${nextId}`;
       default:
